@@ -23,6 +23,10 @@ Maze.OPEN = 0  																					-- constants used in the Maze to represent s
 Maze.WALL = 1
 Maze.TELEPORT = 2
 																								-- (not actually put on the map !)
+--//	Initialise and create maze
+--//	@width 		[number] 		Maze width, defaults to 20
+--//	@height 	[number]		Maze height, defaults to 20
+--//	@fillLevel 	[number]		Proportion required filled, defaults to 0.42
 
 function Maze:initialise(width,height,fillLevel) 
 	if width == nil then return end 															-- being used as a subclass ?
@@ -37,14 +41,29 @@ function Maze:initialise(width,height,fillLevel)
 	end
 end 
 
+--//	Read cell x,y
+--//	@x 	[number] 		horizontal position
+--//	@y 	[number]		vertical position
+--//	@return [number]	contents of the cell.
+
 function Maze:get(x,y)
 	return self.m_map[self:index(x,y)] or Maze.WALL 											-- default is wall.
 end 
+
+--//	Write to cell x,y
+--//	@x 	[number] 		horizontal position
+--//	@y 	[number]		vertical position
+--//	@tile [number]		new contents of the cell.
 
 function Maze:put(x,y,tile)
 	if tile == Maze.WALL then tile = nil end 													-- keeps it as thin as possible.
 	self.m_map[self:index(x,y)] = tile 
 end 
+
+--//	Convert an x,y coordinate pair to a single index into the maze map.
+--//	@x 	[number] 		horizontal position
+--//	@y 	[number]		vertical position
+--//	@return [number] 	index for that position
 
 function Maze:index(x,y) 
 	x = (x + self.m_width * 100) % self.m_width  												-- maze wraps around
@@ -52,12 +71,23 @@ function Maze:index(x,y)
 	return x + y * 1000																			-- convert it to a single number representing the cell.
 end 
 
+--//	Put objects in the maze map, a minimum distance from the player.
+--//	@quantity 	[number]	Number of items
+--//	@tile 		[number]	tile ID
+--//	@player 	[player] 	player object
+--//	@distance 	[number]	how far  away does it have to be.
+
 function Maze:add(quantity,tile,player,distance)
 	for i = 1,quantity do 																		-- for the given number of objects
 		local cell = self:findCell(distance,player) 											-- find a space away from the player
 		self:put(cell.x,cell.y,tile) 															-- put the tile there.
 	end 
 end
+
+--//	Find an empty cell and minimum distance from the position.
+--//	@minDistance 	[number]	how far  away does it have to be.
+--//	@fromCoord 	 	[table]		x,y location of the position.
+--//	@return 		[table] 	x,y position of empty cell.
 
 function Maze:findCell(minDistance,fromCoord) 
 	local cell,dist 																			-- find a cell not that close to a given coordinate
@@ -67,6 +97,8 @@ function Maze:findCell(minDistance,fromCoord)
 	until self:get(cell.x,cell.y) == Maze.OPEN and dist > minDistance 							-- keep going until both open and not too near to the object
 	return cell 
 end 
+
+--//	Add a single corridor to the maze, as far as it is allowable without creating a 2x2 open space in the map.
 
 function Maze:addPart()
 	local x,y,size,dx,dy 
@@ -85,10 +117,17 @@ function Maze:addPart()
 	until size == 0 or (not ok) 																-- until done the lot, or failed.
 end 
 
+--//	Check to see if 4 squares x,y .. x+1,y+1 are all open, which indicates an invalid maze
+--//	@x 	[number] 		horizontal position
+--//	@y 	[number]		vertical position
+--//	@return [boolean] 	true if at least one is not open.
+
 function Maze:checkOpenSquare(x,y)
 	return self:get(x,y) ~= Maze.OPEN or self:get(x,y+1) ~= Maze.OPEN 							-- check four squares at x,y
 					or self:get(x+1,y) ~= Maze.OPEN or self:get(x+1,y+1) ~= Maze.OPEN 			-- this open room isn't allowed.
 end 
+
+--//	Dump maze to console in a texty fashion.
 
 function Maze:print()
 	local parts = {}
@@ -103,6 +142,9 @@ function Maze:print()
 	end
 	print(string.rep("#",self.m_width+2))
 end 
+
+--//	Work out the ration of Wall to Open for the maze
+--//	@return [number] 	wall proportion.
 
 function Maze:getFillRatio() 
 	local count = 0

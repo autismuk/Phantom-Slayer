@@ -13,6 +13,10 @@
 -- Standard OOP (with Constructor parameters added.)
 _G.Base =  _G.Base or { new = function(s,...) local o = { } setmetatable(o,s) s.__index = s o:initialise(...) return o end, initialise = function() end }
 
+--- ************************************************************************************************************************************************************************
+--//											This class renders the maze etc. in 'classic' Dragon/Coco style
+--- ************************************************************************************************************************************************************************
+
 local ViewRender = Base:new()
 
 --//	Create a display object with a rendering of the map on it
@@ -89,15 +93,20 @@ end
 --//		@return 	[table]			Rectangle x1,y1,x2,y2,width,height
 
 function ViewRender:getDepthRect(depth) 
-	if depth > 7 then return nil end 
-	local vStep = self.m_height / 2.7
-	local rect = { height = self.m_height - vStep * math.pow(depth - 0.3,0.5) }
-	rect.width = rect.height * self.m_width / self.m_height
-	if depth == 0 then rect = { width = self.m_width, height = self.m_height } end
-	rect.x1 = self.m_width / 2 - rect.width / 2 rect.y1 = self.m_height / 2 - rect.height / 2
+	if depth > 7 then return nil end 															-- only visible seven squares down
+	local vStep = self.m_height / 2.7 															-- vertical stepping
+	local rect = { height = self.m_height - vStep * math.pow(depth - 0.3,0.5) } 				-- work out the height of the rectangle
+	rect.width = rect.height * self.m_width / self.m_height 									-- scale width appropriately.
+	if depth <= 0 then rect = { width = self.m_width, height = self.m_height } end 				-- limit to full window
+	rect.x1 = self.m_width / 2 - rect.width / 2 rect.y1 = self.m_height / 2 - rect.height / 2 	-- calculate x1,y1,x2,y2
 	rect.x2 = rect.x1 + rect.width rect.y2 = rect.y1 + rect.height
 	return rect
 end 
+
+--//	Render the background
+--//	@width 		[number]		width of background
+--//	@height 	[number]		height of background
+--//	@skyHeight 	[number]		height of sky part of background.
 
 function ViewRender:renderBackground(width,height,skyHeight)
 	local background = display.newRect(self.m_group,0,0,width,skyHeight) 						-- solid yellow background upper
@@ -106,26 +115,30 @@ function ViewRender:renderBackground(width,height,skyHeight)
 	background.anchorX,background.anchorY = 0,0 background:setFillColor(1,1,0)
 end 
 
+--//	Render a wall or floor
+--//	@path 		[array]			4 pairs of coordinates specifying the wall/floor space
+--//	@type 		[string]		(l)eft (r)ight (c)entre (f)loor
+
 function ViewRender:renderWall(path,type)
-	local r = self:getWallImage(type)
-	local isSolid = (r == nil)
-	if isSolid then r = display.newRect(0,0,100,100) end
-	r.width = 100 r.height = 100
-	local p = r.path 
-	p.x1,p.y1 = 0,0
+	local r = self:getWallImage(type) 															-- get the image
+	local isSolid = (r == nil) 																	-- is solid polygon if no image
+	if isSolid then r = display.newRect(0,0,100,100) end 										-- if that, mangle a rectangle
+	r.width = 100 r.height = 100 																-- make it the default size
+	local p = r.path  																			-- short pointer to path for 2.5D mod
+	p.x1,p.y1 = 0,0 																			-- set points to force the shape.
 	p.x2,p.y2 = path[3]-path[1],path[4]-path[2]-100
 	p.x3,p.y3 = path[5]-path[1]-100,path[6]-path[2]-100
 	p.x4,p.y4 = path[7]-path[1]-100,path[8]-path[2]
-	self.m_group:insert(r)
-	r.x,r.y = path[1],path[2]
-	r.anchorX,r.anchorY = 0,0
-	if isSolid then 
+	self.m_group:insert(r) 																		-- insert into group
+	r.x,r.y = path[1],path[2] 																	-- move to correct position.
+	r.anchorX,r.anchorY = 0,0 																	-- with anchor
+	if isSolid then  																			-- if solid colour it
 		r:setFillColor(0,0,1)
 		if type == "f" then 
 			r:setFillColor(0,0,0,0) 
 			r:setStrokeColor(1,0,0) r.strokeWidth = 1 
 		end
-		if type ~= "c" and type ~= "f" then 
+		if type ~= "c" and type ~= "f" then  													-- vertical lines on corners.
 			local l 
 			if type == "l" then l = display.newLine(path[5],path[6],path[7],path[8]) end
 			if type == "r" then l = display.newLine(path[1],path[2],path[3],path[4]) end
@@ -135,52 +148,80 @@ function ViewRender:renderWall(path,type)
 	end
 end 
 
+--//	Get an image to mangle using 2.5D
+--//	@type 		[string]		(l)eft (r)ight (c)entre (f)loor
+
 function ViewRender:getWallImage(type)
 	return nil
 end 
 
+--//	Draw a maze object 
+--//	@tile 	[number] 		tile ID
+--//	@rDraw 	[rectangle]		rectangle to draw it in.
+
 function ViewRender:renderMazeObject(tile,rDraw)
-	if tile == Maze.TELEPORT then 
-		local r = display.newCircle(rDraw.x1+rDraw.width/2,rDraw.y1+rDraw.height/2,32)
-		r.width, r.height = rDraw.width*0.7,rDraw.height
-		r.fill.effect = "filter.dissolve"
+	if tile == Maze.TELEPORT then 																-- is it a teleport
+		local r = display.newCircle(rDraw.x1+rDraw.width/2,rDraw.y1+rDraw.height/2,32) 			-- circle
+		r.width, r.height = rDraw.width*0.7,rDraw.height 										-- right size
+		r.fill.effect = "filter.dissolve" 														-- speckly green effect.
 		r.fill.effect.threshold = 0.5
 		r:setFillColor(0,1,0)
-		self.m_group:insert(r)
+		self.m_group:insert(r) 																	-- insert into object
 	end 
 end 
 
+--//	Render a phantom
+--//	@rDraw 	[rectangle]		rectangle to draw it in.
+
 function ViewRender:renderPhantom(rDraw)
-	local img = self:getPhantomImage()
-	img.x,img.y = rDraw.x1+rDraw.width/2,rDraw.y1+rDraw.height/2
-	self.m_group:insert(img)
-	local scale = rDraw.height / img.height 
+	local img = self:getPhantomImage() 															-- get image
+	img.x,img.y = rDraw.x1+rDraw.width/2,rDraw.y1+rDraw.height/2 								-- positon centrally
+	self.m_group:insert(img) 																	-- insert into group
+	local scale = rDraw.height / img.height  													-- scale to fit keeping aspect ratio.
 	img.xScale,img.yScale = scale,scale
 end 
+
+--//	Get the phantom's image
+--//	@return 	[displayObject]		Phantom image 
 
 function ViewRender:getPhantomImage()
 	return display.newImage("images/phantom.png",0,0)
 end 
 
+--- ************************************************************************************************************************************************************************
+--//											This class renders the maze etc. in a more modern style
+--- ************************************************************************************************************************************************************************
+
 local ModernViewRender = ViewRender:new()
 
+--//	Render the background
+--//	@width 		[number]		width of background
+--//	@height 	[number]		height of background
+--//	@skyHeight 	[number]		height of sky part of background.
+
 function ModernViewRender:renderBackground(width,height,skyHeight)
-	local background = display.newImage(self.m_group,"images/skybox.png",0,0)
+	local background = display.newImage(self.m_group,"images/skybox.png",0,0) 						-- sky box
 	background.anchorX,background.anchorY = 0,0
 	background.width,background.height = width,skyHeight
-	background = display.newImage(self.m_group,"images/stone.png",0,skyHeight)
+	background = display.newImage(self.m_group,"images/stone.png",0,skyHeight) 						-- ston floor bit.
 	background.anchorX,background.anchorY = 0,0
 	background.width,background.height = width,height-skyHeight
 end 
 
+--//	Get an image to mangle using 2.5D
+--//	@type 		[string]		(l)eft (r)ight (c)entre (f)loor
+
 function ModernViewRender:getWallImage(type)
-	if type == "f" then return display.newImage("images/stone.png",0,0) end
-	return display.newImage("images/wall.png",0,0)
+	if type == "f" then return display.newImage("images/stone.png",0,0) end 						-- floor is stone
+	return display.newImage("images/wall.png",0,0) 													-- everything else is wall.
 end 
 
+--//	Get the phantom's image
+--//	@return 	[displayObject]		Phantom image 
+
 function ModernViewRender:getPhantomImage()
-	local img = display.newImage("images/ghost.png",0,0)
-	img.alpha = 0.7 
+	local img = display.newImage("images/ghost.png",0,0) 											-- use ghost
+	img.alpha = 0.7  																				-- make a little transparent
 	return img
 end 
 

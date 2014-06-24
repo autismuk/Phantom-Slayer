@@ -19,6 +19,9 @@ _G.Base =  _G.Base or { new = function(s,...) local o = { } setmetatable(o,s) s.
 
 local Player = Base:new()
 
+--//	Initialise a player, putting them in the maze.
+--//	@maze 	[Maze] 			maze instance.
+
 function Player:initialise(maze)
 	self.m_maze = maze
 	local p = maze:findCell(0,{ x = 0,y = 0 }) 													-- get the player start point, fake the minimum distance.
@@ -30,13 +33,23 @@ function Player:initialise(maze)
 	self.xStart = self.x self.yStart = self.y 													-- remember where we start.
 end
 
+--//	Get player's location
+--//	@return [table] 	x,y coordinates
+
 function Player:getLocation()
 	return { x = self.x, y = self.y }
 end
 
+--//	Get player's direction.
+--//	@return [table]		delta x,delta y values 
+
 function Player:getDirection()
 	return { dx = self.dx, dy = self.dy }
 end 
+
+--//	Get player's direction if they turn.
+--//	@turn 	[number]	number of 90 degree turns anti-clockwise (e.g. turning left, 1 is left, 3 is effectively right)
+--//	@return [table]		delta x,delta y values 
 
 function Player:getTurnOffset(turn) 
 	turn = (turn + 100) % 4
