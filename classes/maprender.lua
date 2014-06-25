@@ -13,6 +13,8 @@
 -- Standard OOP (with Constructor parameters added.)
 _G.Base =  _G.Base or { new = function(s,...) local o = { } setmetatable(o,s) s.__index = s o:initialise(...) return o end, initialise = function() end }
 
+local Maze = require("classes.maze")
+
 --- ************************************************************************************************************************************************************************
 --																			Map Render Class
 --- ************************************************************************************************************************************************************************

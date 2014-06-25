@@ -24,12 +24,10 @@ Maze.WALL = 1
 Maze.TELEPORT = 2
 																								-- (not actually put on the map !)
 --//	Initialise and create maze
---//	@width 		[number] 		Maze width, defaults to 20
---//	@height 	[number]		Maze height, defaults to 20
---//	@fillLevel 	[number]		Proportion required filled, defaults to 0.42
+--//	@info 	[table]		constructor information.
 
-function Maze:initialise(width,height,fillLevel) 
-	if width == nil then return end 															-- being used as a subclass ?
+function Maze:constructor(info) 
+	width = info.width height = info.height fillLevel = info.fillLevel 							-- get constructor parameters.
 	self.m_width = width or 20																	-- store width and self.m_height.
 	self.m_height = height or 20
 	self.m_map = {} 																			-- map. 0 = open, 1 = wall, 2 = compass, 3 = map, 4 = teleport

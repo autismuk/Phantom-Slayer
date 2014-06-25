@@ -13,6 +13,8 @@
 -- Standard OOP (with Constructor parameters added.)
 _G.Base =  _G.Base or { new = function(s,...) local o = { } setmetatable(o,s) s.__index = s o:initialise(...) return o end, initialise = function() end }
 
+local Maze = require("classes.maze")
+
 --- ************************************************************************************************************************************************************************
 --//											This class renders the maze etc. in 'classic' Dragon/Coco style
 --- ************************************************************************************************************************************************************************
@@ -85,6 +87,11 @@ function ViewRender:render(maze,player,phantoms,width,height)
 
 	local r = self:getDepthRect(visibleDepth+1)  												-- this is the last depth drawn.
 	while r == nil do r = self:getDepthRect(visibleDepth) visibleDepth = visibleDepth - 1 end
+	r = self:getFrameImage() 																	-- get frame
+	if r ~= nil then  																			-- if frame present position and scale
+		r.anchorX,r.anchorY = 0,0 r.x,r.y = 0,0 r.width,r.height = width,height 
+		self.m_group:insert(r)
+	end
 	return self.m_group
 end 
 
@@ -188,6 +195,13 @@ function ViewRender:getPhantomImage()
 	return display.newImage("images/phantom.png",0,0)
 end 
 
+--//	Get the frame image
+--//	@return 	[displayObject] 	Frame Image, or nil if no frame
+
+function ViewRender:getFrameImage()
+	return nil
+end 
+
 --- ************************************************************************************************************************************************************************
 --//											This class renders the maze etc. in a more modern style
 --- ************************************************************************************************************************************************************************
@@ -225,5 +239,14 @@ function ModernViewRender:getPhantomImage()
 	return img
 end 
 
-return ModernViewRender
+--//	Get the frame image
+--//	@return 	[displayObject] 	Frame Image, or nil if no frame
+
+function ViewRender:getFrameImage()
+	local f = display.newImage("images/viewframe.png",0,0)
+	f.alpha = 0.6
+	return f
+end 
+
+return { RetroViewRender = ViewRender, ModernViewRender = ModernViewRender }
 

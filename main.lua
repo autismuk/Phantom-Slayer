@@ -1,28 +1,35 @@
 display.setStatusBar(display.HiddenStatusBar)
-Maze = require("classes.maze")
-MapRender = require("classes.maprender")
-ViewRender = require("classes.viewrender")
-Player = require("classes.player")
 
-math.randomseed(42)
-m = Maze:new(20,20)
-p = Player:new(m)
-m:add(1,Maze.TELEPORT,p:getLocation(),5) 
+local ExecutiveFactory = require("system.game")
+local Executive = require("system.executive")
+local Maze = require("classes.maze")
 
-m:put(p.x,p.y-3,Maze.TELEPORT)
---p.dx = 1 p.dy = 0 
+local executive = Executive:new()
 
-mr = MapRender:new()
-vw = ViewRender:new()
---m:print()
---print(m:getFillRatio())
+local MainGameFactory = ExecutiveFactory:new()
 
-fakePhantom = {}
-fakePhantom[1] = { x = p.x,y = p.y - 2 }
-c = vw:render(m,p,fakePhantom,440,300)
-c.x,c.y = 20,10
+function MainGameFactory:preOpen(info)
+	math.randomseed(42)
+	local executive = self:getExecutive()
+	executive:addLibraryObject("classes.maze"):name("maze")
 
-c1 = mr:render(m,p,fakePhantom,120,120)
-c1.x,c1.y = 320,15
-c1.alpha = 0.7
+	player = executive:addLibraryObject("classes.player", { maze = executive.e.maze })
+	executive.e.maze:add(1,Maze.TELEPORT,player:getLocation(),5) 
 
+	executive:addLibraryObject("classes.viewrender","ModernViewRender"):name("render3D")
+	executive:addLibraryObject("classes.maprender"):name("render2D")
+
+	fakePhantom = {}
+	executive.e.maze:put(player.x,player.y-3,Maze.TELEPORT)
+	fakePhantom[1] = { x = player.x,y = player.y - 2 }
+	--fakePhantom[1] = { x = player.x,y = player.y - 1 }
+	c = executive.e.render3D:render(executive.e.maze,player,fakePhantom,440,300)
+	c.x,c.y = 20,10
+
+	c1 = executive.e.render2D:render(executive.e.maze,player,fakePhantom,120,120)
+	c1.x,c1.y = 320,15
+	c1.alpha = 0.7
+end
+
+Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
+Game:start("play")
