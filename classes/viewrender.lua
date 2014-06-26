@@ -52,7 +52,7 @@ function ViewRender:render(maze,player,phantoms,width,height)
 		if rInner ~= nil then  
 			self:renderWall({ rInner.x1,rInner.y2,rOuter.x1,rOuter.y2,rOuter.x2,rOuter.y2,rInner.x2,rInner.y2},"f")
 			if depth > 0 then 
-				for _,ref in ipairs(phantoms) do 
+				for _,ref in pairs(phantoms) do 
 					if ref.x == x and ref.y == y then 
 						self:renderPhantom(rMiddle)
 					end 
@@ -87,11 +87,6 @@ function ViewRender:render(maze,player,phantoms,width,height)
 
 	local r = self:getDepthRect(visibleDepth+1)  												-- this is the last depth drawn.
 	while r == nil do r = self:getDepthRect(visibleDepth) visibleDepth = visibleDepth - 1 end
-	r = self:getFrameImage() 																	-- get frame
-	if r ~= nil then  																			-- if frame present position and scale
-		r.anchorX,r.anchorY = 0,0 r.x,r.y = 0,0 r.width,r.height = width,height 
-		self.m_group:insert(r)
-	end
 	return self.m_group
 end 
 
@@ -101,8 +96,8 @@ end
 
 function ViewRender:getDepthRect(depth) 
 	if depth > 7 then return nil end 															-- only visible seven squares down
-	local vStep = self.m_height / 2.7 															-- vertical stepping
-	local rect = { height = self.m_height - vStep * math.pow(depth - 0.3,0.5) } 				-- work out the height of the rectangle
+	local vStep = self.m_height / 2.55 															-- vertical stepping
+	local rect = { height = self.m_height - vStep * math.pow(depth - 0.7,0.5) } 				-- work out the height of the rectangle
 	rect.width = rect.height * self.m_width / self.m_height 									-- scale width appropriately.
 	if depth <= 0 then rect = { width = self.m_width, height = self.m_height } end 				-- limit to full window
 	rect.x1 = self.m_width / 2 - rect.width / 2 rect.y1 = self.m_height / 2 - rect.height / 2 	-- calculate x1,y1,x2,y2
@@ -195,13 +190,6 @@ function ViewRender:getPhantomImage()
 	return display.newImage("images/phantom.png",0,0)
 end 
 
---//	Get the frame image
---//	@return 	[displayObject] 	Frame Image, or nil if no frame
-
-function ViewRender:getFrameImage()
-	return nil
-end 
-
 --- ************************************************************************************************************************************************************************
 --//											This class renders the maze etc. in a more modern style
 --- ************************************************************************************************************************************************************************
@@ -237,15 +225,6 @@ function ModernViewRender:getPhantomImage()
 	local img = display.newImage("images/ghost.png",0,0) 											-- use ghost
 	img.alpha = 0.7  																				-- make a little transparent
 	return img
-end 
-
---//	Get the frame image
---//	@return 	[displayObject] 	Frame Image, or nil if no frame
-
-function ViewRender:getFrameImage()
-	local f = display.newImage("images/viewframe.png",0,0)
-	f.alpha = 0.6
-	return f
 end 
 
 return { RetroViewRender = ViewRender, ModernViewRender = ModernViewRender }
