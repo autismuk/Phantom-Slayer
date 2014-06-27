@@ -275,11 +275,22 @@ end
 local Phantom = Executive:createClass()
 
 function Phantom:constructor(info)
-	self.m_maze = info.maze 
+	self.m_maze = info.maze 																	-- save maze, player, maximum hits.
 	self.m_player = info.player 
-	local pos = self.m_maze:findCell(5,self.m_player:getLocation())
-	self.x = pos.x self.y = pos.y
+	self.m_maxHits = info.maxHits 
+	self.m_hitsLeft = math.random(math.max(math.floor(info.maxHits/2),1),info.maxHits) 			-- work out hits required to kill.
+	self.m_speed = info.speed  																	-- save speed
+	self:relocate()
+	self:addRepeatingTimer(self.m_speed)
 	self:tag("+enemy")
+end
+
+function Phantom:relocate()
+	local pos = self.m_maze:findCell(12,self.m_player:getLocation()) 							-- find a position not too near
+	self.x = pos.x self.y = pos.y 																-- copy it into the phantom position.
+end 
+
+function Phantom:onTimer(tag,timerID)
 end
 
 --- ************************************************************************************************************************************************************************
@@ -314,7 +325,17 @@ Game:start("play", { retro = false, phantomCount = 4, phantomSpeed = 2000, phant
 
 --[[
 	
-	Phantom - object that moves about.
+	Phantom - move about on timer
+	  		- update the view on move.
+	  		- check for collision in player manager, cause game over etc.
+	Bullet  - add timing for fire, 2 second recycle
+			- create bullet on fire, work out bullet and death
+			- bullet display blanked on turn.
+			- handle recycling and speed up.
+			- score.
+	SFX 	- add the bong bong effect (can listen to view message)
+			- add fire, teleport, die
+
 	On move sends a broadcast message, map view can check against its list of viewed values, player manager can check for death.
 	Missile - fired by current player (instigted by controller), hides if player turns.
 
