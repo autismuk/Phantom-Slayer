@@ -43,11 +43,24 @@ function Player:getLocation()
 	return { x = self.x, y = self.y }
 end
 
+--//	Set player's location
+--//	@pos 	[table]		x,y coordinates
+
+function Player:setLocation(pos) 
+	self.x = pos.x self.y = pos.y 
+end 
+
 --//	Get player's direction.
 --//	@return [table]		delta x,delta y values 
 
 function Player:getDirection()
 	return { dx = self.dx, dy = self.dy }
+end 
+
+--//	Teleport back to the player's start point.
+
+function Player:teleport()
+	self.x = self.xStart self.y = self.yStart 
 end 
 
 --//	Get player's direction if they turn.
@@ -62,6 +75,14 @@ function Player:getTurnOffset(turn)
 		else result.dy = -result.dx result.dx = 0 end 
 	end
 	return result 
+end 
+
+--//	Rotate the player
+--//	@turn 	[number]		90 degree clockwise rotations.
+
+function Player:turn(turn)
+	local newd = self:getTurnOffset(turn)
+	self.dx = newd.dx self.dy = newd.dy 
 end 
 
 return Player

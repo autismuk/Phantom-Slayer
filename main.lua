@@ -128,7 +128,7 @@ function FrontView:updateView(player,turn,posChange)
 		self.m_object = m  																		-- make this object current object
 	else 	
 		local tTime = 250
-		if turn == 1 then  																		-- the rotational slide that phantom slayer does
+		if turn == 3 then  																		-- the rotational slide that phantom slayer does
 			m.x = display.contentWidth 															-- clockwise
 			transition.to(m,{ time = tTime, x = 0})
 			transition.to(self.m_object,{ time = tTime, x = -display.contentWidth, onComplete = function(obj) obj:removeSelf() end})
@@ -136,11 +136,10 @@ function FrontView:updateView(player,turn,posChange)
 		else 
 			m.x = -display.contentWidth 														-- anticlockwise
 			transition.to(m,{ time = tTime, x = 0})
-			transition.to(self.m_object,{ time = tTime, x = -isplay.contentWidth, onComplete = function(obj) obj:removeSelf() end})
+			transition.to(self.m_object,{ time = tTime, x = display.contentWidth, onComplete = function(obj) obj:removeSelf() end})
 			self.m_object = m
 		end 
 	end
-
 end 
 
 --- ************************************************************************************************************************************************************************
@@ -209,28 +208,74 @@ function FrontController:tap(e)
 	return true 
 end 
 
+--- ************************************************************************************************************************************************************************
+--																		Player Manager Class
+--- ************************************************************************************************************************************************************************
+
+local PlayerManager = Executive:createClass()
+
+function PlayerManager:constructor(info)
+	self.m_maze = info.maze 
+end 
+
+function PlayerManager:destructor()
+	self.m_maze = nil self.m_player = nil 
+end 
+
+function PlayerManager:attach(player)
+	self.m_player = player 
+	return self 
+end 
+
+function PlayerManager:onCommand(cmd)
+	if self.m_player == nil then return end
+	if cmd == "left" or cmd == "right" then 
+		local turn = (cmd == "left") and 1 or 3
+		self.m_player:turn(turn)
+	end
+	if cmd == "forward" or cmd == "back" then 
+		local dm = (cmd == "forward") and 1 or -1
+		local pos = self.m_player:getLocation()
+		local dir = self.m_player:getDirection()
+		pos.x = pos.x + dir.dx * dm pos.y = pos.y + dir.dy * dm
+		local tile = self.m_maze:get(pos.x,pos.y)
+		if tile ~= Maze.WALL then 
+			if tile == Maze.TELEPORT then 
+				self.m_player:teleport()
+				self:addLibraryObject("utils.particle","ShortEmitter", 
+							{ emitter = "Teleport", time = 3000, x = display.contentWidth/2, y = display.contentHeight / 2})
+			else 
+				self.m_player:setLocation(pos)
+			end
+		end
+	end
+end 
+
+--- ************************************************************************************************************************************************************************
+--- ************************************************************************************************************************************************************************
+
 local MainGameFactory = ExecutiveFactory:new()
 
 function MainGameFactory:preOpen(info)
 	math.randomseed(42)
 	local executive = self:getExecutive()
-	executive:addLibraryObject("classes.maze"):name("maze")
-	executive:addLibraryObject("classes.maprender"):name("map2Drender")
+	local maze = executive:addLibraryObject("classes.maze")
+
 	local view = "ModernViewRender" if info.retro then view = "RetroViewRender" end
+	executive:addLibraryObject("classes.maprender"):name("map2Drender")
 	executive:addLibraryObject("classes.viewrender",view):name("map3Drender")
-	executive:addLibraryObject("classes.player", { maze = executive.e.maze }):name("player")
 
-	executive.e.maze:add(1,Maze.TELEPORT,executive.e.player:getLocation(),5) 
+	local player = executive:addLibraryObject("classes.player", { maze = maze })
 
-	--executive.e.maze:put(executive.e.player.x,executive.e.player.y-3,Maze.TELEPORT)
+	maze:add(1,Maze.TELEPORT,player:getLocation(),5) 
 
-	local mv = MapView:new(executive,{ maze = executive.e.maze}):attach(executive.e.player)
-	FrontController:new(executive, { retro = info.retro }):attach( { onCommand = function(a,m) print(a,m) end })
-	FrontView:new(executive,{ maze = executive.e.maze}):attach(executive.e.player)
+	maze:put(player.x,player.y-4,Maze.TELEPORT)
 
-	--executive:insert(display.newRect(0,0,10,10))
+	MapView:new(executive,{ maze = maze, time = 99999999 }):attach(player)
+	local manager = PlayerManager:new(executive, { maze = maze }):attach(player)
+	FrontController:new(executive, { retro = info.retro }):attach(manager)
+	FrontView:new(executive,{ maze = maze}):attach(player)
 
-	--fakePhantom[1] = { x = player.x,y = player.y - 1 }
 end
 
 Game:addState("play",MainGameFactory:new({ retro = false }),{ endGame = { target = "play" }})
