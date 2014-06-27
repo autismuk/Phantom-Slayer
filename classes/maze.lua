@@ -27,6 +27,7 @@ Maze.TELEPORT = 2
 --//	@info 	[table]		constructor information.
 
 function Maze:constructor(info) 
+	local width,height,fillLevel
 	width = info.width height = info.height fillLevel = info.fillLevel 							-- get constructor parameters.
 	self.m_width = width or 20																	-- store width and self.m_height.
 	self.m_height = height or 20
