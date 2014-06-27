@@ -58,9 +58,6 @@ function ViewRender:render(maze,player,phantoms,width,height)
 					end 
 				end 
 			end			local tile = maze:get(x,y) 															-- get tile.
-			if depth >= 0 and tile ~= Maze.WALL and tile ~= Maze.OPEN then  					-- if not first bit, and something is there that's drawaable.
-				self:renderMazeObject(tile,rMiddle)
-			end
 
 			if maze:get(x + player.dx,y + player.dy) == Maze.WALL then 							-- wall in front.
 				self:renderWall({ rInner.x1,rInner.y1,rInner.x1,rInner.y2,  					-- render central wall.
@@ -81,6 +78,9 @@ function ViewRender:render(maze,player,phantoms,width,height)
 				wall[8]=wall[2] wall[6]=wall[4] 
 			end 	
 			self:renderWall(wall,"r") 															-- draw it.
+			if depth >= 0 and tile ~= Maze.WALL and tile ~= Maze.OPEN then  					-- if not first bit, and something is there that's drawaable.
+				self:renderMazeObject(tile,rMiddle)
+			end
 		end  
 		depth = depth - 1 																		-- next depth
 	until depth < 0  																			-- until out of range or we hit a wall.

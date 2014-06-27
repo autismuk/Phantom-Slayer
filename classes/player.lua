@@ -33,7 +33,7 @@ function Player:constructor(info)
 		self.dx = math.random(0,1) * 2 - 1 self.dy = 0 											-- work out a random direction for player
 		if math.random(0,1) == 0 then self.dy = self.dx self.dx = 0 end 
 	until self.m_maze:get(self.x + self.dx,self.y + self.dy) == Maze.OPEN
-	self.xStart = self.x self.yStart = self.y 													-- remember where we start.
+	self.xStart = self.x self.yStart = self.y self.dxStart = self.dx self.dyStart = self.dy		-- remember where we start.
 end
 
 --//	Get player's location
@@ -60,7 +60,7 @@ end
 --//	Teleport back to the player's start point.
 
 function Player:teleport()
-	self.x = self.xStart self.y = self.yStart 
+	self.x = self.xStart self.y = self.yStart self.dx = self.dxStart self.dy = self.dyStart
 end 
 
 --//	Get player's direction if they turn.

@@ -153,8 +153,13 @@ local FrontController = Executive:createClass()
 function FrontController:constructor(info) 
 	self.m_clickScreen = display.newRect(0,0,display.contentWidth,display.contentHeight) 		-- nearly transparent screen to click on.
 	self.m_clickScreen.anchorX,self.m_clickScreen.anchorY = 0,0 self.m_clickScreen.alpha = 0.01
-	self.m_button = display.newImage("images/button.png",										-- fire button
-											display.contentWidth-10,display.contentHeight-10)
+	if info.retro then 																			-- fire button
+		self.m_button = display.newCircle(display.contentWidth-10,display.contentHeight-10,32)
+		self.m_button:setFillColor(1,0,0) self.m_button.strokeWidth = 2 self.m_button:setStrokeColor(0,0,0)
+	else
+		self.m_button = display.newImage("images/button.png",										
+												display.contentWidth-10,display.contentHeight-10)
+	end
 	self.m_button.anchorX,self.m_button.anchorY = 1,1 
 	self.m_button.width,self.m_button.height = display.contentWidth/5,display.contentWidth/5
 	self:insert(self.m_clickScreen,self.m_button) 												-- add to view
@@ -269,7 +274,7 @@ function MainGameFactory:preOpen(info)
 
 	maze:add(1,Maze.TELEPORT,player:getLocation(),5) 
 
-	maze:put(player.x,player.y-4,Maze.TELEPORT)
+	--maze:put(player.x,player.y-4,Maze.TELEPORT)
 
 	MapView:new(executive,{ maze = maze, time = 99999999 }):attach(player)
 	local manager = PlayerManager:new(executive, { maze = maze }):attach(player)
