@@ -51,13 +51,7 @@ function ViewRender:render(maze,player,phantoms,width,height)
 		-- if rInner ~= nil then local r2 = display.newRect(self.m_group,rInner.x1,rInner.y1,rInner.width,rInner.height) r2:setFillColor(0,0,0,0) r2:setStrokeColor(0,0.4,0,0.5) r2.strokeWidth = 1 r2.anchorX,r2.anchorY = 0,0 end
 		if rInner ~= nil then  
 			self:renderWall({ rInner.x1,rInner.y2,rOuter.x1,rOuter.y2,rOuter.x2,rOuter.y2,rInner.x2,rInner.y2},"f")
-			if depth > 0 then 
-				for _,ref in pairs(phantoms) do 
-					if ref.x == x and ref.y == y then 
-						self:renderPhantom(rMiddle)
-					end 
-				end 
-			end			local tile = maze:get(x,y) 															-- get tile.
+			local tile = maze:get(x,y) 															-- get tile.
 
 			if maze:get(x + player.dx,y + player.dy) == Maze.WALL then 							-- wall in front.
 				self:renderWall({ rInner.x1,rInner.y1,rInner.x1,rInner.y2,  					-- render central wall.
@@ -81,6 +75,13 @@ function ViewRender:render(maze,player,phantoms,width,height)
 			if depth >= 0 and tile ~= Maze.WALL and tile ~= Maze.OPEN then  					-- if not first bit, and something is there that's drawaable.
 				self:renderMazeObject(tile,rMiddle)
 			end
+			if depth > 0 then 
+				for _,ref in pairs(phantoms) do 
+					if ref.x == x and ref.y == y then 
+						self:renderPhantom(rMiddle)
+					end 
+				end 
+			end			
 		end  
 		depth = depth - 1 																		-- next depth
 	until depth < 0  																			-- until out of range or we hit a wall.

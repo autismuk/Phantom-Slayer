@@ -94,7 +94,7 @@ function MapView:updateView(player,turn,posChange)
 	if self.m_inFade then return end 															-- fading out, do nothing
 	if self.m_object ~= nil then self.m_object:removeSelf() end									-- remove old object 
 	local renderer = self:getExecutive().e.map2Drender 											-- render it
-	local m = renderer:render(self.m_maze,player,{},display.contentWidth/3,display.contentHeight/3)
+	local m = renderer:render(self.m_maze,player,self:query("enemy").objects,display.contentWidth/3,display.contentHeight/3)
 	m.x = display.contentWidth*2/3-20 m.y = 20 													-- position it
 	m.alpha = 0.7 																				-- slightly transparent
 	m:toFront() 																				-- bring it to the front.
@@ -269,38 +269,53 @@ function PlayerManager:onCommand(cmd)
 end 
 
 --- ************************************************************************************************************************************************************************
+--																				Create phantoms
+--- ************************************************************************************************************************************************************************
+
+local Phantom = Executive:createClass()
+
+function Phantom:constructor(info)
+	self.m_maze = info.maze 
+	self.m_player = info.player 
+	local pos = self.m_maze:findCell(5,self.m_player:getLocation())
+	self.x = pos.x self.y = pos.y
+	self:tag("+enemy")
+end
+
+--- ************************************************************************************************************************************************************************
 --- ************************************************************************************************************************************************************************
 
 local MainGameFactory = ExecutiveFactory:new()
 
 function MainGameFactory:preOpen(info,eData)
-	local executive = self:getExecutive()
-	local maze = executive:addLibraryObject("classes.maze")
+	local executive = self:getExecutive() 														-- get the executive
+	local maze = executive:addLibraryObject("classes.maze") 									-- add a maze object
 
-	local view = "ModernViewRender" if info.retro then view = "RetroViewRender" end
-	executive:addLibraryObject("classes.maprender"):name("map2Drender")
+	local view = "ModernViewRender" if eData.retro then view = "RetroViewRender" end 			-- figure out retro or modern view
+	executive:addLibraryObject("classes.maprender"):name("map2Drender") 						-- create renderers
 	executive:addLibraryObject("classes.viewrender",view):name("map3Drender")
 
-	local player = executive:addLibraryObject("classes.player", { maze = maze })
+	local player = executive:addLibraryObject("classes.player", { maze = maze }) 				-- add a player
 
-	maze:add(1,Maze.TELEPORT,player:getLocation(),5) 
+	maze:add(1,Maze.TELEPORT,player:getLocation(),5)  											-- add a teleport, at least 5 units from the player.
 
-	--maze:put(player.x,player.y-4,Maze.TELEPORT)
-
-	MapView:new(executive,{ maze = maze, time = 99999999 }):attach(player)
-	local manager = PlayerManager:new(executive, { maze = maze }):attach(player)
-	FrontController:new(executive, { retro = info.retro }):attach(manager)
-	FrontView:new(executive,{ maze = maze}):attach(player)
-
+	local manager = PlayerManager:new(executive, { maze = maze }):attach(player) 				-- this object accepts commands and manipulates the player
+	FrontController:new(executive, { retro = eData.retro }):attach(manager) 					-- this handles input which is passed to the manager
+	FrontView:new(executive,{ maze = maze}):attach(player) 										-- add a 3D projection view, following the player.
+	MapView:new(executive,{ maze = maze, time = 99999999 }):attach(player) 						-- add a map view, following the player
+	for i = 1, eData.phantomCount or 3 do 
+		Phantom:new(executive, { maze = maze, player = player, speed = eData.phantomSpeed, maxHits = eData.phantomHits })
+	end
 end
 
 math.randomseed(42)
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play", { retro = true })
+Game:start("play", { retro = false, phantomCount = 4, phantomSpeed = 2000, phantomHits = 3 })
 
 --[[
 	
-	Phantom - object that moves about, queried by view, check collision with player(s).
+	Phantom - object that moves about.
+	On move sends a broadcast message, map view can check against its list of viewed values, player manager can check for death.
 	Missile - fired by current player (instigted by controller), hides if player turns.
 
 --]]

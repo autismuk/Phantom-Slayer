@@ -22,6 +22,7 @@ local Maze = require("classes.maze")
 local MapRender = Base:new()
 
 MapRender.PS_PLAYER = -1 																		-- used in the map routine only as the tile where the player is.
+MapRender.PS_PHANTOM = -2 																		-- same for phantom.
 
 --//	Create a display object with a rendering of the map on it
 --//	@maze 		[Maze]					Maze to render
@@ -53,6 +54,12 @@ function MapRender:render(maze,player,phantoms,width,height)
 			if player ~= nil and x == playerPos.x and y == playerPos.y then 					-- if player at square, display that psuedo-tile 
 				tile = MapRender.PS_PLAYER 
 			end 
+			for _,ref in pairs(phantoms) do  													-- if phantoms at square, display that pseudo-tile
+				if player ~= nil and x == ref.x and y == ref.y then 
+					 --tile = MapRender.PS_PHANTOM												-- uncomment this to show phantoms for debugging.
+				end 
+			end
+
 			if tile ~= Maze.OPEN then 															-- non space tile.
 				r = self:getCellObject(tile) 													-- get representing object
 				if r ~= nil then 																-- if something was returned
@@ -91,6 +98,10 @@ function MapRender:getCellObject(tile)
 		r = display.newPolygon(0,0,{ 0,0, 40,0, 40,20, 60,20, 60,40, 40,40, 40,60, 0,60, 0,40, 20,40, 20,20, 0,20 })
 		r:setFillColor(1,0,0)
 	end 
+	if tile == MapRender.PS_PHANTOM then 														-- phantom (debug only, doesn't update when they move)
+		r = display.newRect(0,0,10,10)
+		r:setFillColor(1,0,1)
+	end
 	return r
 end 
 
