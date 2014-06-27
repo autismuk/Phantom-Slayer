@@ -34,6 +34,7 @@ function Player:constructor(info)
 		if math.random(0,1) == 0 then self.dy = self.dx self.dx = 0 end 
 	until self.m_maze:get(self.x + self.dx,self.y + self.dy) == Maze.OPEN
 	self.xStart = self.x self.yStart = self.y self.dxStart = self.dx self.dyStart = self.dy		-- remember where we start.
+	self:tag("+player") 																		-- tag it as a player.
 end
 
 --//	Get player's location
@@ -47,7 +48,8 @@ end
 --//	@pos 	[table]		x,y coordinates
 
 function Player:setLocation(pos) 
-	self.x = pos.x self.y = pos.y 
+	self.x = (pos.x + self.m_maze.m_width) % self.m_maze.m_width
+	self.y = (pos.y + self.m_maze.m_height) % self.m_maze.m_height
 end 
 
 --//	Get player's direction.

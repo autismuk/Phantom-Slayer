@@ -219,38 +219,50 @@ end
 
 local PlayerManager = Executive:createClass()
 
+--//	Constructor
+--//	@info 	[table] 		Constructor information - has maze member
+
 function PlayerManager:constructor(info)
-	self.m_maze = info.maze 
+	self.m_maze = info.maze  																	-- Remember the maze
 end 
+
+--//	Tidy up
 
 function PlayerManager:destructor()
 	self.m_maze = nil self.m_player = nil 
 end 
+
+--//	Attach a player to the player manager
+--//	@player 	[object] 		Player object
+--//	@return 	[object] 		Self
 
 function PlayerManager:attach(player)
 	self.m_player = player 
 	return self 
 end 
 
+--//	Handle a command received from a FrontController
+--//	@cmd 		[string] 		Command received
+
 function PlayerManager:onCommand(cmd)
-	if self.m_player == nil then return end
-	if cmd == "left" or cmd == "right" then 
-		local turn = (cmd == "left") and 1 or 3
+	if self.m_player == nil then return end 													-- nothing attached
+	if cmd == "left" or cmd == "right" then  													-- handle left/right turns
+		local turn = (cmd == "left") and 1 or 3 												-- turn anticlockwise.
 		self.m_player:turn(turn)
 	end
-	if cmd == "forward" or cmd == "back" then 
-		local dm = (cmd == "forward") and 1 or -1
+	if cmd == "forward" or cmd == "back" then  													-- handle forward/back
+		local dm = (cmd == "forward") and 1 or -1 												-- add or subtract directions
 		local pos = self.m_player:getLocation()
 		local dir = self.m_player:getDirection()
-		pos.x = pos.x + dir.dx * dm pos.y = pos.y + dir.dy * dm
-		local tile = self.m_maze:get(pos.x,pos.y)
-		if tile ~= Maze.WALL then 
-			if tile == Maze.TELEPORT then 
-				self.m_player:teleport()
-				self:addLibraryObject("utils.particle","ShortEmitter", 
+		pos.x = pos.x + dir.dx * dm pos.y = pos.y + dir.dy * dm 								-- work new position
+		local tile = self.m_maze:get(pos.x,pos.y) 												-- read tile
+		if tile ~= Maze.WALL then  																-- if not wall
+			if tile == Maze.TELEPORT then  														-- check for teleport
+				self.m_player:teleport() 														-- this actually does it
+				self:addLibraryObject("utils.particle","ShortEmitter",  						-- and this provides the SFX.
 							{ emitter = "Teleport", time = 3000, x = display.contentWidth/2, y = display.contentHeight / 2})
 			else 
-				self.m_player:setLocation(pos)
+				self.m_player:setLocation(pos) 													-- update player new position.
 			end
 		end
 	end
@@ -261,8 +273,7 @@ end
 
 local MainGameFactory = ExecutiveFactory:new()
 
-function MainGameFactory:preOpen(info)
-	math.randomseed(42)
+function MainGameFactory:preOpen(info,eData)
 	local executive = self:getExecutive()
 	local maze = executive:addLibraryObject("classes.maze")
 
@@ -283,13 +294,12 @@ function MainGameFactory:preOpen(info)
 
 end
 
-Game:addState("play",MainGameFactory:new({ retro = false }),{ endGame = { target = "play" }})
-Game:start("play")
+math.randomseed(42)
+Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
+Game:start("play", { retro = true })
 
 --[[
 	
-	MapView - auto disappear (time parameter) self destructs, can't update while closing.
-	Controller - manipulates an attached player, fire delay
 	Phantom - object that moves about, queried by view, check collision with player(s).
 	Missile - fired by current player (instigted by controller), hides if player turns.
 
