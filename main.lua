@@ -448,7 +448,7 @@ end
 math.randomseed(42)
 AudioCache:new(Game, { sounds = { "pulse","shoot","teleport","die" }} )
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 1000, phantomHits = 3, fireTime = 2000 })
+Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 4000, phantomHits = 3, fireTime = 2000 })
 
 --[[
 	
