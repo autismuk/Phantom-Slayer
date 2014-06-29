@@ -382,43 +382,6 @@ function Phantom:onTimer(tag,timerID)
 end
 
 --- ************************************************************************************************************************************************************************
---//																				Audio Cache
---- ************************************************************************************************************************************************************************
-
-local AudioCache = Executive:createClass()
-
---//	Constructor - info.sounds is a list of samples, default is mp3.
---//	@info 	[table]		Constructor parameters
-
-function AudioCache:constructor(info)
-	self:name("audio") 																			-- access this via e.audio
-	self.m_soundCache = {} 																		-- cached audio
-	for _,name in ipairs(info.sounds) do  														-- work through list of audio filenames
-		if name:find("%.") == nil then name = name .. ".mp3" end  								-- no extension, default to .mp3
-		local stub = name:match("(.*)%."):lower() 												-- get the 'stub', the name without the extension as l/c
-		name = "audio/"..name 																	-- actual name of file in audio subdirectory.
-		self.m_soundCache[stub] = audio.loadSound(name) 										-- load and store in cache.
-	end
-end 
-
---//	Play a sound effect from the cache.
---//	@name 	[string]			stub name, case insensitive
---//	@options [table] 			options for play, see audio.play() documents
-
-function AudioCache:play(name,options)
-	name = name:lower() 																		-- case irrelevant
-	assert(self.m_soundCache[name] ~= nil,"Unknown sound "..name) 								-- check sound actually exists
-	audio.play(self.m_soundCache[name],options) 												-- play it 
-end 
-
---//	Destructor
-
-function AudioCache:destructor()
-	for _,ref in pairs(self.m_soundCache) do audio.dispose(ref) end 							-- clear out the cache.
-	self.m_soundCache = nil 																	-- nil so references lost.
-end 
-
---- ************************************************************************************************************************************************************************
 --- ************************************************************************************************************************************************************************
 
 local MainGameFactory = ExecutiveFactory:new()
@@ -446,7 +409,8 @@ end
 
 
 math.randomseed(42)
-AudioCache:new(Game, { sounds = { "pulse","shoot","teleport","die" }} )
+print(_G.Game,Game,Game.getState,Game:getState())
+Game:addLibraryObject("utils.audio", { sounds = { "pulse","shoot","teleport","die" }} )
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
 Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 4000, phantomHits = 3, fireTime = 2000 })
 
