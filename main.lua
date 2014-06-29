@@ -19,9 +19,15 @@ function ViewObjectBase:constructor(info)
 	self.m_player = nil 																		-- current player view is watching, currently nothing.
 	self.m_xView = nil self.m_yView = nil self.m_direction = nil 								-- x, y and direction		
 	self.m_maze = info.maze 																	-- maze in
-	self:tag("update") 																			-- updateable object 
+	self:tag("+update,+viewlistener") 															-- updateable object 
 	self.m_object = nil 																		-- current display object
 end 
+
+--//	Messages are deemed to be refresh ones.
+
+function ViewObjectBase:onMessage(sender,body)
+	if body.name == "phantom" then self.m_xView = nil end 										-- phantom message, update display.
+end
 
 
 --//	Destructor
@@ -142,6 +148,23 @@ function FrontView:updateView(player,turn,posChange)
 	end
 end 
 
+function FrontView:onMessage(sender,body)
+	if self.m_isDying then return end  															-- no more messages if dying.
+	ViewObjectBase.onMessage(self,sender,body) 													-- pass message to subclass.
+	if body.name == "die" then 																	-- dying, process that effect.
+		transition.to(self.m_object,{ time = 5000, 												-- animate falling to floor, at the end go to next game state.
+									  y = -display.contentHeight / 2, transition = easing.outElastic,
+									  onComplete = function() self:sendMessage(sender,{name = "nextstate" }) end })
+		transition.to(self.m_object,{ time = 3000, alpha = 0.25 }) 								-- put the lights out.
+		local renderer = self:getExecutive().e.map3Drender 										-- get renderer
+		local w = display.contentWidth local h = display.contentHeight
+		local path = { 0,h,-w/4,h*2,w+w/4,h*2,w,h } 											-- create a floor to fall onto.
+		local image = renderer:renderWall(path,"f")
+		image:toBack()
+		self.m_isDying = true
+	end
+end 
+
 --- ************************************************************************************************************************************************************************
 --																		Controller/Front Frame
 --- ************************************************************************************************************************************************************************
@@ -224,6 +247,8 @@ local PlayerManager = Executive:createClass()
 
 function PlayerManager:constructor(info)
 	self.m_maze = info.maze  																	-- Remember the maze
+	self.m_isDying = false 
+	self:tag("+viewlistener")
 end 
 
 --//	Tidy up
@@ -241,11 +266,33 @@ function PlayerManager:attach(player)
 	return self 
 end 
 
+--//	Handle Messages
+
+function PlayerManager:onMessage(sender,body)
+	local location = self.m_player:getLocation()												-- get player location
+	if body.name == "phantom" and body.x == location.x and body.y == location.y then  			-- phantom moved to our square ?
+		self:sendMessage("enemy", { name = "stop"}) 											-- stop all enemy attacks
+		self:die()
+	end 
+	if body.name == "nextstate" then 
+		print("Game over")
+	end
+
+end 
+
+--//	Kill the player 
+
+function PlayerManager:die() 
+	if self.m_isDying then return end 															-- can't die twice
+	self.m_isDying = true  																		-- flag dying
+	self:sendMessage("viewlistener",{ name = "die" }) 											-- tell the listener to display the dying display.
+end 
+
 --//	Handle a command received from a FrontController
 --//	@cmd 		[string] 		Command received
 
 function PlayerManager:onCommand(cmd)
-	if self.m_player == nil then return end 													-- nothing attached
+	if self.m_player == nil or self.m_isDying then return end 									-- nothing attached
 	if cmd == "left" or cmd == "right" then  													-- handle left/right turns
 		local turn = (cmd == "left") and 1 or 3 												-- turn anticlockwise.
 		self.m_player:turn(turn)
@@ -274,6 +321,8 @@ end
 
 local Phantom = Executive:createClass()
 
+--//	Constructor
+
 function Phantom:constructor(info)
 	self.m_maze = info.maze 																	-- save maze, player, maximum hits.
 	self.m_player = info.player 
@@ -281,16 +330,41 @@ function Phantom:constructor(info)
 	self.m_hitsLeft = math.random(math.max(math.floor(info.maxHits/2),1),info.maxHits) 			-- work out hits required to kill.
 	self.m_speed = info.speed  																	-- save speed
 	self:relocate()
-	self:addRepeatingTimer(self.m_speed)
+	self.m_timerID = self:addRepeatingTimer(self.m_speed)
 	self:tag("+enemy")
 end
 
+--//	Relocate the phantom somewhere in the maze a reasonable way from the player.
+
 function Phantom:relocate()
-	local pos = self.m_maze:findCell(12,self.m_player:getLocation()) 							-- find a position not too near
+	local dist = (self.m_maze.m_width+self.m_maze.m_height) / 2 * 0.65 							-- how far away the phantoms have to be
+	local pos = self.m_maze:findCell(dist,self.m_player:getLocation()) 							-- find a position not too near
 	self.x = pos.x self.y = pos.y 																-- copy it into the phantom position.
+	self:sendMessage("viewlistener", { name = "phantom",x = self.x, y = self.y })				-- view update
 end 
 
+--//	Messages sent to phantoms 
+
+function Phantom:onMessage(sender,body)
+	if body.name == "stop" then 																-- can be commanded to stop.
+		self:removeTimer(self.m_timerID)
+	end 
+end 
+
+--//	Move the phantom on the timer 
+
 function Phantom:onTimer(tag,timerID)
+	local player = self.m_player:getLocation() 													-- where the player is
+	local dx,dy dx = player.x - self.x dy = player.y - self.y 									-- offset to player
+	if dx ~= 0 then dx = dx / math.abs(dx) end 													-- make -1,0,1 
+	if dy ~= 0 then dy = dy / math.abs(dy) end 
+	if self.m_maze:get(self.x+dx,self.y+dy) == Maze.WALL and math.random(1,20) == 1 then 		-- if can not move then just once in a while.
+		if math.random(1,2) == 1 then dx = 0 else dy = 0 end  									-- randomly zero one of dx,dy
+	end
+	if self.m_maze:get(self.x+dx,self.y+dy) ~= Maze.WALL then 									-- if can move
+		self.x = self.x + dx self.y = self.y + dy 												-- move to new position
+	 	self:sendMessage("viewlistener", { name = "phantom",x = self.x, y = self.y })			-- view update
+	end		
 end
 
 --- ************************************************************************************************************************************************************************
@@ -321,19 +395,22 @@ end
 
 math.randomseed(42)
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play", { retro = false, phantomCount = 4, phantomSpeed = 2000, phantomHits = 3 })
+Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 1000, phantomHits = 3 })
 
 --[[
 	
-	Phantom - move about on timer
-	  		- update the view on move.
-	  		- check for collision in player manager, cause game over etc.
-	Bullet  - add timing for fire, 2 second recycle
+	Sound   
+			- object belonging to game.
+	Phantom 
+	  		- can actually run through phantoms ....
+	Bullet
+			- add timing for fire, 2 second recycle
 			- create bullet on fire, work out bullet and death
 			- bullet display blanked on turn.
 			- handle recycling and speed up.
 			- score.
-	SFX 	- add the bong bong effect (can listen to view message)
+	SFX 
+			- add the bong bong effect (can listen to view message)
 			- add fire, teleport, die
 
 	On move sends a broadcast message, map view can check against its list of viewed values, player manager can check for death.

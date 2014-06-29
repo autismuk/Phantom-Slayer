@@ -138,7 +138,7 @@ function ViewRender:renderWall(path,type)
 	if isSolid then  																			-- if solid colour it
 		r:setFillColor(0,0,1)
 		if type == "f" then 
-			r:setFillColor(0,0,0,0) 
+			r:setFillColor(1,1,0) 
 			r:setStrokeColor(1,0,0) r.strokeWidth = 1 
 		end
 		if type ~= "c" and type ~= "f" then  													-- vertical lines on corners.
@@ -149,6 +149,7 @@ function ViewRender:renderWall(path,type)
 			self.m_group:insert(l) 
 		end
 	end
+	return r
 end 
 
 --//	Get an image to mangle using 2.5D
