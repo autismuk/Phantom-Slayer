@@ -19,7 +19,7 @@ function ViewObjectBase:constructor(info)
 	self.m_player = nil 																		-- current player view is watching, currently nothing.
 	self.m_xView = nil self.m_yView = nil self.m_direction = nil 								-- x, y and direction		
 	self.m_maze = info.maze 																	-- maze in
-	self:tag("+update,+viewlistener") 															-- updateable object 
+	self:tag("+update,+changelistener") 														-- updateable object 
 	self.m_object = nil 																		-- current display object
 end 
 
@@ -134,6 +134,7 @@ function FrontView:updateView(player,turn,posChange)
 		self.m_object = m  																		-- make this object current object
 	else 	
 		local tTime = 250
+		self:sendMessage("viewlistener",{name = "turn"}) 										-- we are turning
 		if turn == 3 then  																		-- the rotational slide that phantom slayer does
 			m.x = display.contentWidth 															-- clockwise
 			transition.to(m,{ time = tTime, x = 0})
@@ -247,8 +248,10 @@ local PlayerManager = Executive:createClass()
 
 function PlayerManager:constructor(info)
 	self.m_maze = info.maze  																	-- Remember the maze
-	self.m_isDying = false 
-	self:tag("+viewlistener")
+	self.m_rechargeTime = info.fireTime or 2000 												-- firing time.
+	self.m_isDying = false 																		-- set when dying 
+	self.m_lastFire = 0  																		-- time of last fire.
+	self:tag("+changelistener")
 end 
 
 --//	Tidy up
@@ -274,8 +277,9 @@ function PlayerManager:onMessage(sender,body)
 		self:sendMessage("enemy", { name = "stop"}) 											-- stop all enemy attacks
 		self:die()
 	end 
-	if body.name == "nextstate" then 
+	if body.name == "nextstate" then 															-- message to go to next state
 		print("Game over")
+		--TODO Switch new state
 	end
 
 end 
@@ -285,7 +289,8 @@ end
 function PlayerManager:die() 
 	if self.m_isDying then return end 															-- can't die twice
 	self.m_isDying = true  																		-- flag dying
-	self:sendMessage("viewlistener",{ name = "die" }) 											-- tell the listener to display the dying display.
+	self:sendMessage("changelistener",{ name = "die" }) 										-- tell the listener to display the dying display.
+	Game.e.audio:play("die")
 end 
 
 --//	Handle a command received from a FrontController
@@ -308,11 +313,20 @@ function PlayerManager:onCommand(cmd)
 				self.m_player:teleport() 														-- this actually does it
 				self:addLibraryObject("utils.particle","ShortEmitter",  						-- and this provides the SFX.
 							{ emitter = "Teleport", time = 3000, x = display.contentWidth/2, y = display.contentHeight / 2})
+				Game.e.audio:play("teleport")
 			else 
 				self.m_player:setLocation(pos) 													-- update player new position.
 			end
 		end
 	end
+	if cmd == "fire" then  																		-- firing.
+		local time = system.getTimer() 															-- get current time
+		if time > self.m_lastFire then  														-- allowed to fire yet ?
+			self.m_lastFire = time + self.m_rechargeTime   										-- set next fire time
+			Game.e.audio:play("shoot")
+			-- TODO: Create new missile
+		end 
+	end 
 end 
 
 --- ************************************************************************************************************************************************************************
@@ -340,7 +354,7 @@ function Phantom:relocate()
 	local dist = (self.m_maze.m_width+self.m_maze.m_height) / 2 * 0.65 							-- how far away the phantoms have to be
 	local pos = self.m_maze:findCell(dist,self.m_player:getLocation()) 							-- find a position not too near
 	self.x = pos.x self.y = pos.y 																-- copy it into the phantom position.
-	self:sendMessage("viewlistener", { name = "phantom",x = self.x, y = self.y })				-- view update
+	self:sendMessage("changelistener", { name = "phantom",x = self.x, y = self.y })				-- view update
 end 
 
 --//	Messages sent to phantoms 
@@ -363,9 +377,46 @@ function Phantom:onTimer(tag,timerID)
 	end
 	if self.m_maze:get(self.x+dx,self.y+dy) ~= Maze.WALL then 									-- if can move
 		self.x = self.x + dx self.y = self.y + dy 												-- move to new position
-	 	self:sendMessage("viewlistener", { name = "phantom",x = self.x, y = self.y })			-- view update
+	 	self:sendMessage("changelistener", { name = "phantom",x = self.x, y = self.y })			-- view update
 	end		
 end
+
+--- ************************************************************************************************************************************************************************
+--//																				Audio Cache
+--- ************************************************************************************************************************************************************************
+
+local AudioCache = Executive:createClass()
+
+--//	Constructor - info.sounds is a list of samples, default is mp3.
+--//	@info 	[table]		Constructor parameters
+
+function AudioCache:constructor(info)
+	self:name("audio") 																			-- access this via e.audio
+	self.m_soundCache = {} 																		-- cached audio
+	for _,name in ipairs(info.sounds) do  														-- work through list of audio filenames
+		if name:find("%.") == nil then name = name .. ".mp3" end  								-- no extension, default to .mp3
+		local stub = name:match("(.*)%."):lower() 												-- get the 'stub', the name without the extension as l/c
+		name = "audio/"..name 																	-- actual name of file in audio subdirectory.
+		self.m_soundCache[stub] = audio.loadSound(name) 										-- load and store in cache.
+	end
+end 
+
+--//	Play a sound effect from the cache.
+--//	@name 	[string]			stub name, case insensitive
+--//	@options [table] 			options for play, see audio.play() documents
+
+function AudioCache:play(name,options)
+	name = name:lower() 																		-- case irrelevant
+	assert(self.m_soundCache[name] ~= nil,"Unknown sound "..name) 								-- check sound actually exists
+	audio.play(self.m_soundCache[name],options) 												-- play it 
+end 
+
+--//	Destructor
+
+function AudioCache:destructor()
+	for _,ref in pairs(self.m_soundCache) do audio.dispose(ref) end 							-- clear out the cache.
+	self.m_soundCache = nil 																	-- nil so references lost.
+end 
 
 --- ************************************************************************************************************************************************************************
 --- ************************************************************************************************************************************************************************
@@ -384,7 +435,7 @@ function MainGameFactory:preOpen(info,eData)
 
 	maze:add(1,Maze.TELEPORT,player:getLocation(),5)  											-- add a teleport, at least 5 units from the player.
 
-	local manager = PlayerManager:new(executive, { maze = maze }):attach(player) 				-- this object accepts commands and manipulates the player
+	local manager = PlayerManager:new(executive, { maze = maze,fireTime = eData.fireTime }):attach(player) 				-- this object accepts commands and manipulates the player
 	FrontController:new(executive, { retro = eData.retro }):attach(manager) 					-- this handles input which is passed to the manager
 	FrontView:new(executive,{ maze = maze}):attach(player) 										-- add a 3D projection view, following the player.
 	MapView:new(executive,{ maze = maze, time = 99999999 }):attach(player) 						-- add a map view, following the player
@@ -393,26 +444,24 @@ function MainGameFactory:preOpen(info,eData)
 	end
 end
 
+
 math.randomseed(42)
+AudioCache:new(Game, { sounds = { "pulse","shoot","teleport","die" }} )
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 1000, phantomHits = 3 })
+Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 1000, phantomHits = 3, fireTime = 2000 })
 
 --[[
 	
-	Sound   
-			- object belonging to game.
 	Phantom 
-	  		- can actually run through phantoms ....
+	  		- can actually run through phantoms .... (might actually allow this)
 	Bullet
-			- add timing for fire, 2 second recycle
-			- create bullet on fire, work out bullet and death
-			- bullet display blanked on turn.
+			- create bullet on fire, work out bullet and what it hits.
+			- bullet display blanked on turn (view listen)
 			- handle recycling and speed up.
 			- score.
 	SFX 
 			- add the bong bong effect (can listen to view message)
-			- add fire, teleport, die
-
+	
 	On move sends a broadcast message, map view can check against its list of viewed values, player manager can check for death.
 	Missile - fired by current player (instigted by controller), hides if player turns.
 
