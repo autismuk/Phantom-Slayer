@@ -325,12 +325,34 @@ function PlayerManager:onCommand(cmd)
 		if time > self.m_lastFire then  														-- allowed to fire yet ?
 			self.m_lastFire = time + self.m_rechargeTime   										-- set next fire time
 			Game.e.audio:play("shoot") 															-- play fire f/x
-			self:sendMessage("missile",{ distance = 4 })
-			-- TODO: Create new missile
+
+			local target = self:findTarget() 													-- find what was hit
+			if target == nil then target = { distance = 8 } end 								-- nothing.
+			self:sendMessage("missile",target) 													-- fire missile
 		end 
 	end 
 end 
 
+--//	See what a fired missile would hit
+--//	@return 	[table]	containing target (enemy ref) and distance
+
+function PlayerManager:findTarget() 
+	local pos = self.m_player:getLocation() 													-- player location 
+	local dir = self.m_player:getDirection() 													-- player direction
+	local enemyTable = self:query("enemy") 														-- list of enemies
+	local result = nil
+	local range = 0 																			-- absolute maximum range
+	repeat 
+		pos.x = pos.x + dir.dx pos.y = pos.y + dir.dy  											-- next position.
+		range = range + 1 																		-- bump distance.
+		for _,ref in pairs(enemyTable.objects) do 												-- see if any enemies there
+			if ref.x == pos.x and ref.y == pos.y then 											-- found a hit.
+				result = { target = ref, distance = range} 										-- this is what's been hit.
+			end 
+		end
+	until result ~= nil or range > 7 															-- until found or out of range.
+	return result
+end
 --- ************************************************************************************************************************************************************************
 --																				Create phantoms
 --- ************************************************************************************************************************************************************************
@@ -343,16 +365,17 @@ function Phantom:constructor(info)
 	self.m_maze = info.maze 																	-- save maze, player, maximum hits.
 	self.m_player = info.player 
 	self.m_maxHits = info.maxHits 
-	self.m_hitsLeft = math.random(math.max(math.floor(info.maxHits/2),1),info.maxHits) 			-- work out hits required to kill.
 	self.m_speed = info.speed  																	-- save speed
-	self:relocate() 																			-- put it back on the map
 	self.m_timerID = self:addRepeatingTimer(self.m_speed) 										-- add a timer to move it.
+	self:resetPhantom() 																		-- reset the phantom.
 	self:tag("+enemy")
 end
 
 --//	Relocate the phantom somewhere in the maze a reasonable way from the player.
 
-function Phantom:relocate()
+function Phantom:resetPhantom()
+	self.m_hitsLeft = math.random(math.max(math.floor(self.m_maxHits/2),1),self.m_maxHits) 		-- work out hits required to kill.
+																		
 	local dist = (self.m_maze.m_width+self.m_maze.m_height) / 2 * 0.65 							-- how far away the phantoms have to be
 	local pos = self.m_maze:findCell(dist,self.m_player:getLocation()) 							-- find a position not too near
 	self.x = pos.x self.y = pos.y 																-- copy it into the phantom position.
@@ -364,7 +387,17 @@ end
 function Phantom:onMessage(sender,body)
 	if body.name == "stop" then 																-- can be commanded to stop.
 		self:killTimer()
-	end 
+	end
+	if body.name == "shot" then  																-- has been shot.
+		self.m_hitsLeft = self.m_hitsLeft - 1
+		-- TODO: Bump Score and Kills
+		if self.m_hitsLeft == 0 then 															-- if dead then 
+			Game.e.audio:play("deadphantom")			
+			self:resetPhantom()
+			-- TODO: Dead phantom
+			-- TODO: Adjust speed.
+		end
+	end
 end 
 
 --//	Kill any current timer
@@ -474,8 +507,9 @@ function MissileView:onMessage(sender,message)
 	local scale = 0.6 / (message.distance+1) 													-- final size
 	transition.to(self.m_missile, { time = 100*message.distance,xScale = scale,yScale = scale, 	-- trnsition it, and hide when finished
 				onComplete = function() self.m_missile.alpha = 0 end })
-	if message.target == nil then print("No target ?") return end 
-	self:sendMessageDelayed(message.target,"shot",100*message.distance) 						-- also when finished, tell target it has been shot.
+	if message.target ~= nil then 
+		self:sendMessage(message.target,{ name = "shot" },100*message.distance) 				-- also when finished, tell target it has been shot, if in range.
+	end
 end 
 
 --//	Tidy up.
@@ -506,25 +540,23 @@ function MainGameFactory:preOpen(info,eData)
 	FrontView:new(executive,{ maze = maze}):attach(player) 										-- add a 3D projection view, following the player.
 	MapView:new(executive,{ maze = maze, time = 99999999 }):attach(player) 						-- add a map view, following the player
 	MissileView:new(executive)
-	for i = 1, eData.phantomCount or 3 do 
+	for i = 1, eData.phantomCount or 3 do  														-- add the bad guys
 		Phantom:new(executive, { maze = maze, player = player, speed = eData.phantomSpeed, maxHits = eData.phantomHits })
 	end
 	PhantomMonitor:new(executive):attach(player)												-- monitor enemy distances and make breathy sounds.
 end
 
 math.randomseed(42)
-Game:addLibraryObject("utils.audio", { sounds = { "pulse","shoot","teleport","die" }} )
+Game:addLibraryObject("utils.audio", { sounds = { "pulse","shoot","teleport","die","deadphantom" }} )
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 3000, phantomHits = 3, fireTime = 2000 })
+Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 300, phantomHits = 3, fireTime = 2000 })
 
 --[[
 	
 	Phantom 
 	  		- can actually run through phantoms .... (might actually allow this)
-	Bullet
-			- create bullet on fire, work out bullet and what it hits.
-			- bullet display blanked on turn (view listen)
-			- handle recycling and speed up.
-			- score.
+	Exit Game early
+			- X somewhere - backarrow ?
 
+"they would be extremely sticky to get free form speedily
 --]]
