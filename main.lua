@@ -372,7 +372,7 @@ function Phantom:constructor(info)
 	self.m_maze = info.maze 																	-- save maze, player, maximum hits.
 	self.m_player = info.player 
 	self.m_maxHits = info.maxHits or 3
-	self.m_speed = info.speed or 3500 															-- save speed
+	self.m_speed = info.speed or 5000 															-- save speed
 	self:tag("+enemy")
 	self:resetPhantom() 																		-- reset the phantom.
 end
@@ -481,8 +481,8 @@ function PhantomMonitor:onTimer(deltaTime,deltaMillis,current)
 		local dist = math.sqrt((p.x-p1.x)*(p.x-p1.x)+(p.y-p1.y)*(p.y-p1.y)) 					-- get distance
 		nearest = math.min(dist,nearest)
 	end 
-	local breatheTime = math.max(0.5+nearest/3) 												-- how long the
-	if nearest == 0 or breatheTime > 2.3 then self:addSingleTimer(1000)  return end 			-- right on top, or too long, fire again in 1 second.
+	local breatheTime = math.max(0.3+nearest/4) 												-- how long the
+	if nearest == 0 or breatheTime > 2.1 then self:addSingleTimer(1000)  return end 			-- right on top, or too long, fire again in 1 second.
 	Game.e.audio:play("pulse") 																	-- play the breathy sound
 	self:addSingleTimer(breatheTime * 1000) 													-- fire after the breathy sound
 end
@@ -546,9 +546,9 @@ function MainGameFactory:preOpen(info,eData)
 	local manager = PlayerManager:new(executive, { maze = maze,fireTime = eData.fireTime }):attach(player) 				-- this object accepts commands and manipulates the player
 	FrontController:new(executive, { retro = eData.retro }):attach(manager) 					-- this handles input which is passed to the manager
 	FrontView:new(executive,{ maze = maze}):attach(player) 										-- add a 3D projection view, following the player.
-	MapView:new(executive,{ maze = maze, time = 99999999 }):attach(player) 						-- add a map view, following the player
+	MapView:new(executive,{ maze = maze }):attach(player) 										-- add a map view, following the player
 	MissileView:new(executive)
-	for i = 1, eData.phantomCount or 3 do  														-- add the bad guys
+	for i = 1, eData.phantomCount or 14 do  													-- add the bad guys
 		Phantom:new(executive, { maze = maze, player = player, speed = eData.phantomSpeed, maxHits = eData.phantomHits })
 	end
 	PhantomMonitor:new(executive):attach(player)												-- monitor enemy distances and make breathy sounds.
@@ -557,10 +557,12 @@ end
 math.randomseed(42)
 Game:addLibraryObject("utils.audio", { sounds = { "pulse","shoot","teleport","die","deadphantom" }} )
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play") --, { retro = false, phantomCount = 1, phantomSpeed = 3000, phantomHits = 3, fireTime = 2000 })
+Game:start("play") --, { retro = false, phantomCount = 14, phantomSpeed = 3000, phantomHits = 3, fireTime = 2000 })
 
 --[[
-	
+
+	Scoring 
+		
 	Phantom 
 	  		- can actually run through phantoms .... (might actually allow this)
 
