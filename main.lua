@@ -100,8 +100,8 @@ function MapView:updateView(player,turn,posChange)
 	if self.m_inFade then return end 															-- fading out, do nothing
 	if self.m_object ~= nil then self.m_object:removeSelf() end									-- remove old object 
 	local renderer = self:getExecutive().e.map2Drender 											-- render it
-	local m = renderer:render(self.m_maze,player,self:query("enemy").objects,display.contentWidth/3,display.contentHeight/3)
-	m.x = display.contentWidth*2/3-20 m.y = 20 													-- position it
+	local m = renderer:render(self.m_maze,player,self:query("enemy").objects,display.contentWidth*0.3,display.contentHeight*0.3)
+	m.x = display.contentWidth*2/3-5 m.y = 5 													-- position it
 	m.alpha = 0.7 																				-- slightly transparent
 	m:toFront() 																				-- bring it to the front.
 	if self.m_object == nil then  																-- if new then transition it in.
@@ -181,22 +181,26 @@ function FrontController:constructor(info)
 	if info.retro then 																			-- fire button
 		self.m_button = display.newCircle(display.contentWidth-10,display.contentHeight-10,32)
 		self.m_button:setFillColor(1,0,0) self.m_button.strokeWidth = 2 self.m_button:setStrokeColor(0,0,0)
-	else
+	else 																						-- image based version.
 		self.m_button = display.newImage("images/button.png",										
-												display.contentWidth-10,display.contentHeight-10)
+												display.contentWidth-5,display.contentHeight-5)
 	end
 	self.m_button.anchorX,self.m_button.anchorY = 1,1 
 	self.m_button.width,self.m_button.height = display.contentWidth/5,display.contentWidth/5
-	self:insert(self.m_clickScreen,self.m_button) 												-- add to view
-	if not info.retro then 																		-- frame o non retro view
-		self.m_frame = display.newImage("images/viewframe.png",display.contentWidth/2,display.contentHeight/2)
-		self.m_frame.alpha = 0.6
-		self.m_frame.width, self.m_frame.height = display.contentWidth*1.07,display.contentHeight*1.07
-		self:insert(self.m_frame)
-	end
 	self.m_clickScreen:addEventListener("tap",self) 											-- add tap listeners
 	self.m_button:addEventListener("tap",self) 
+	self.m_backButton = display.newImage("images/back.png",2,2) 								-- back button
+	self.m_backButton:addEventListener("tap",self)
+	self.m_backButton.width,self.m_backButton.height = display.contentWidth/9,display.contentWidth/9
+	self.m_backButton.anchorX,self.m_backButton.anchorY = 0,0
+	self:insert(self.m_clickScreen,self.m_button,self.m_backButton) 							-- add to view
 	self.m_reciever = nil 																		-- nothing listening for commands.
+--	if not info.retro then 																		-- frame o non retro view
+--		self.m_frame = display.newImage("images/viewframe.png",display.contentWidth/2,display.contentHeight/2)
+--		self.m_frame.alpha = 0.6
+--		self.m_frame.width, self.m_frame.height = display.contentWidth*1.07,display.contentHeight*1.07
+--		self:insert(self.m_frame)
+--	end
 end 
 
 --//	Tidy up
@@ -204,6 +208,7 @@ end
 function FrontController:destructor(info)
 	self.m_clickScreen:removeEventListener("tap",self) 											-- remove listeners
 	self.m_button:removeEventListener("tap",self)
+	self.m_backButton:removeEventListener("tap",self)
 	self.m_clickScreen:removeSelf() 															-- remove display objects
 	self.m_button:removeSelf()
 	if self.m_frame ~= nil then self.m_frame:removeSelf() end
@@ -225,6 +230,8 @@ function FrontController:tap(e)
 	local message = ""
 	if e.target == self.m_button then  															-- fire presses
 		message = "fire"
+	elseif e.target == self.m_backButton then 
+		self:sendMessage("changelistener",{ name = "nextstate" }) 
 	else 
 		if e.x < display.contentWidth / 4 or e.x > display.contentWidth * 3/4 then 				-- left or right quarter
 			message = "right" 																	-- return left or right
@@ -364,18 +371,19 @@ local Phantom = Executive:createClass()
 function Phantom:constructor(info)
 	self.m_maze = info.maze 																	-- save maze, player, maximum hits.
 	self.m_player = info.player 
-	self.m_maxHits = info.maxHits 
-	self.m_speed = info.speed  																	-- save speed
-	self.m_timerID = self:addRepeatingTimer(self.m_speed) 										-- add a timer to move it.
-	self:resetPhantom() 																		-- reset the phantom.
+	self.m_maxHits = info.maxHits or 3
+	self.m_speed = info.speed or 3500 															-- save speed
 	self:tag("+enemy")
+	self:resetPhantom() 																		-- reset the phantom.
 end
 
 --//	Relocate the phantom somewhere in the maze a reasonable way from the player.
 
 function Phantom:resetPhantom()
-	self.m_hitsLeft = math.random(math.max(math.floor(self.m_maxHits/2),1),self.m_maxHits) 		-- work out hits required to kill.
-																		
+	self:killTimer() 																			-- kill any curren ttimer
+	self.m_timerID = self:addRepeatingTimer(self.m_speed) 										-- add a timer to move it.
+	self.m_hitsLeft = math.random(math.max(math.floor(self.m_maxHits/2),1), 					-- work out hits required to kill.
+																		math.floor(self.m_maxHits))
 	local dist = (self.m_maze.m_width+self.m_maze.m_height) / 2 * 0.65 							-- how far away the phantoms have to be
 	local pos = self.m_maze:findCell(dist,self.m_player:getLocation()) 							-- find a position not too near
 	self.x = pos.x self.y = pos.y 																-- copy it into the phantom position.
@@ -393,9 +401,11 @@ function Phantom:onMessage(sender,body)
 		-- TODO: Bump Score and Kills
 		if self.m_hitsLeft == 0 then 															-- if dead then 
 			Game.e.audio:play("deadphantom")			
-			self:resetPhantom()
-			-- TODO: Dead phantom
-			-- TODO: Adjust speed.
+			self.m_maxHits = self.m_maxHits + 0.6 												-- increase hits
+			print(self.m_speed)
+			self.m_speed = math.max(1000,self.m_speed * 0.85) 									-- increase spead.
+			self:resetPhantom() 																-- reset phantom
+			print(self.m_speed)
 		end
 	end
 end 
@@ -419,8 +429,6 @@ function Phantom:onTimer(tag,timerID)
 	if self.m_maze:get(self.x+dx,self.y+dy) == Maze.WALL and math.random(1,20) == 1 then 		-- if can not move then just once in a while.
 		if math.random(1,2) == 1 then dx = 0 else dy = 0 end  									-- randomly zero one of dx,dy
 	end
-
-	if math.abs(self.y-player.y) == 4 then return end 
 
 	if self.m_maze:get(self.x+dx,self.y+dy) ~= Maze.WALL then 									-- if can move
 		self.x = self.x + dx self.y = self.y + dy 												-- move to new position
@@ -549,14 +557,12 @@ end
 math.randomseed(42)
 Game:addLibraryObject("utils.audio", { sounds = { "pulse","shoot","teleport","die","deadphantom" }} )
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 300, phantomHits = 3, fireTime = 2000 })
+Game:start("play") --, { retro = false, phantomCount = 1, phantomSpeed = 3000, phantomHits = 3, fireTime = 2000 })
 
 --[[
 	
 	Phantom 
 	  		- can actually run through phantoms .... (might actually allow this)
-	Exit Game early
-			- X somewhere - backarrow ?
 
 "they would be extremely sticky to get free form speedily
 --]]
