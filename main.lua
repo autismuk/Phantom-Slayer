@@ -5,6 +5,7 @@ require("strict")
 local ExecutiveFactory = require("system.game")
 local Executive = require("system.executive")
 local Maze = require("classes.maze")
+require("system.fontmanager")
 
 --- ************************************************************************************************************************************************************************
 --							Base class for player/object views. Monitors a player for changing location and/or direction and requests update
@@ -371,7 +372,7 @@ local Phantom = Executive:createClass()
 function Phantom:constructor(info)
 	self.m_maze = info.maze 																	-- save maze, player, maximum hits.
 	self.m_player = info.player 
-	self.m_maxHits = info.maxHits or 3
+	self.m_maxHits = info.maxHits or 2
 	self.m_speed = info.speed or 5000 															-- save speed
 	self:tag("+enemy")
 	self:resetPhantom() 																		-- reset the phantom.
@@ -398,14 +399,15 @@ function Phantom:onMessage(sender,body)
 	end
 	if body.name == "shot" then  																-- has been shot.
 		self.m_hitsLeft = self.m_hitsLeft - 1
+		local iScore = 1 
+		if self.m_hitsLeft == 0 then iScore = iScore + 10 end 
+		self:getExecutive().e.score:add(iScore)
 		-- TODO: Bump Score and Kills
 		if self.m_hitsLeft == 0 then 															-- if dead then 
 			Game.e.audio:play("deadphantom")			
 			self.m_maxHits = self.m_maxHits + 0.6 												-- increase hits
-			print(self.m_speed)
 			self.m_speed = math.max(1000,self.m_speed * 0.85) 									-- increase spead.
 			self:resetPhantom() 																-- reset phantom
-			print(self.m_speed)
 		end
 	end
 end 
@@ -527,6 +529,46 @@ function MissileView:destructor()
 end 
 
 --- ************************************************************************************************************************************************************************
+--	Score Object
+--- ************************************************************************************************************************************************************************
+
+local Score = Executive:createClass()
+
+--//	Create the score object
+
+function Score:constructor()
+	self.m_scoreText = display.newBitmapText("0000",5,display.contentHeight-5,"dub",48)				-- Score text
+	self.m_scoreText:setAnchor(0,1) 																-- position, anchor
+	self:insert(self.m_scoreText)
+	self.m_score = 0 																				-- current score and add zeroed
+	self.m_toAdd = 0
+	self:addRepeatingTimer(250) 																	-- update 4 times a second
+	self:name("score")
+end 
+
+--//	Add to score to be added
+--//	@amount [number]	number to add to score
+
+function Score:add(amount)
+	self.m_toAdd = self.m_toAdd + amount 
+end 
+
+--//	On 4Hz timer, add points to the score
+
+function Score:onTimer()
+	if self.m_toAdd > 0 then  																		-- if points outstanding
+		self.m_toAdd = self.m_toAdd - 1 															-- 1 from pending to score
+		self.m_score = self.m_score + 1
+		self.m_scoreText:setText(("0000"..self.m_score):sub(-4)) 									-- update score
+	end 
+end 
+
+function Score:destructor()
+	self.m_scoreText:removeSelf()
+end 
+
+
+--- ************************************************************************************************************************************************************************
 --- ************************************************************************************************************************************************************************
 
 local MainGameFactory = ExecutiveFactory:new()
@@ -552,16 +594,15 @@ function MainGameFactory:preOpen(info,eData)
 		Phantom:new(executive, { maze = maze, player = player, speed = eData.phantomSpeed, maxHits = eData.phantomHits })
 	end
 	PhantomMonitor:new(executive):attach(player)												-- monitor enemy distances and make breathy sounds.
+	Score:new(executive)
 end
 
 math.randomseed(42)
 Game:addLibraryObject("utils.audio", { sounds = { "pulse","shoot","teleport","die","deadphantom" }} )
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play") --, { retro = false, phantomCount = 14, phantomSpeed = 3000, phantomHits = 3, fireTime = 2000 })
+Game:start("play", { retro = true }) --, { retro = false, phantomCount = 14, phantomSpeed = 3000, phantomHits = 3, fireTime = 2000 })
 
 --[[
-
-	Scoring 
 		
 	Phantom 
 	  		- can actually run through phantoms .... (might actually allow this)
