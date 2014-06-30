@@ -126,6 +126,7 @@ function FrontView:updateView(player,turn,posChange)
 	local renderer = self:getExecutive().e.map3Drender 											-- get renderer and render the display
 	local m = renderer:render(self.m_maze,player,phantoms,display.contentWidth,display.contentHeight) 
 	if self.m_object ~= nil then self.m_object:toBack() end 									-- send the old object right to the back
+
 	self:insert(m) 																				-- add to group
 	m:toBack() 																					-- and the new one behind that
 
@@ -323,7 +324,8 @@ function PlayerManager:onCommand(cmd)
 		local time = system.getTimer() 															-- get current time
 		if time > self.m_lastFire then  														-- allowed to fire yet ?
 			self.m_lastFire = time + self.m_rechargeTime   										-- set next fire time
-			Game.e.audio:play("shoot")
+			Game.e.audio:play("shoot") 															-- play fire f/x
+			self:sendMessage("missile",{ distance = 4 })
 			-- TODO: Create new missile
 		end 
 	end 
@@ -343,8 +345,8 @@ function Phantom:constructor(info)
 	self.m_maxHits = info.maxHits 
 	self.m_hitsLeft = math.random(math.max(math.floor(info.maxHits/2),1),info.maxHits) 			-- work out hits required to kill.
 	self.m_speed = info.speed  																	-- save speed
-	self:relocate()
-	self.m_timerID = self:addRepeatingTimer(self.m_speed)
+	self:relocate() 																			-- put it back on the map
+	self.m_timerID = self:addRepeatingTimer(self.m_speed) 										-- add a timer to move it.
 	self:tag("+enemy")
 end
 
@@ -361,7 +363,16 @@ end
 
 function Phantom:onMessage(sender,body)
 	if body.name == "stop" then 																-- can be commanded to stop.
+		self:killTimer()
+	end 
+end 
+
+--//	Kill any current timer
+
+function Phantom:killTimer()
+	if self.m_timerID ~= nil then 
 		self:removeTimer(self.m_timerID)
+		self.m_timerID = nil 
 	end 
 end 
 
@@ -375,11 +386,103 @@ function Phantom:onTimer(tag,timerID)
 	if self.m_maze:get(self.x+dx,self.y+dy) == Maze.WALL and math.random(1,20) == 1 then 		-- if can not move then just once in a while.
 		if math.random(1,2) == 1 then dx = 0 else dy = 0 end  									-- randomly zero one of dx,dy
 	end
+
+	if math.abs(self.y-player.y) == 4 then return end 
+
 	if self.m_maze:get(self.x+dx,self.y+dy) ~= Maze.WALL then 									-- if can move
 		self.x = self.x + dx self.y = self.y + dy 												-- move to new position
 	 	self:sendMessage("changelistener", { name = "phantom",x = self.x, y = self.y })			-- view update
 	end		
 end
+
+--//	Get a phantom location
+--//	@return 	[table]			x,y in a table
+
+function Phantom:getLocation()
+	return { x = self.x, y = self.y }
+end 
+
+--- ************************************************************************************************************************************************************************
+--//															Distance Monitoring Object
+--- ************************************************************************************************************************************************************************
+
+local PhantomMonitor = Executive:createClass() 
+
+--// 	Create a new phantom monitor
+
+function PhantomMonitor:constructor()
+	self:addSingleTimer(1000)
+end 
+
+--//	Tidy up
+
+function PhantomMonitor:destructor()
+	self.m_player = nil 
+end 
+
+--//	Attach a player to the monitor
+--//	@player 	[table] 		Player to attach
+
+function PhantomMonitor:attach(player)
+	self.m_player = player 
+end 
+
+--//	Handle phantom timer events - work out the nearest, and if not on top or too far away make breathy sound and refire at end
+--//	otherwise refire after 1 second.
+
+function PhantomMonitor:onTimer(deltaTime,deltaMillis,current)
+	local phantoms = self:query("enemy") 														-- find all baddies
+	if phantoms.count == 0 or self.m_player == nil then self:addSingleTimer(1000) return end 	-- if no phantoms or no player, fire again in 1 second.
+	local nearest = 999999 																		-- initial distance
+	local p = self.m_player:getLocation() 														-- player position
+	for _,ref in pairs(phantoms.objects) do 													-- scan them all
+		local p1 = ref:getLocation() 															-- get location 
+		local dist = math.sqrt((p.x-p1.x)*(p.x-p1.x)+(p.y-p1.y)*(p.y-p1.y)) 					-- get distance
+		nearest = math.min(dist,nearest)
+	end 
+	local breatheTime = math.max(0.5+nearest/3) 												-- how long the
+	if nearest == 0 or breatheTime > 2.3 then self:addSingleTimer(1000)  return end 			-- right on top, or too long, fire again in 1 second.
+	Game.e.audio:play("pulse") 																	-- play the breathy sound
+	self:addSingleTimer(breatheTime * 1000) 													-- fire after the breathy sound
+end
+
+--- ************************************************************************************************************************************************************************
+--														Missile View. Responsible for missile animation
+--- ************************************************************************************************************************************************************************
+
+local MissileView = Executive:createClass()
+
+--// 	Create it
+
+function MissileView:constructor(info)
+	self.m_missile = display.newCircle(display.contentWidth/2,display.contentHeight/2,			-- missile graphic
+																			display.contentHeight*0.44)
+	self.m_missile:setFillColor(0,1,1) 															-- cyan
+	self:insert(self.m_missile) 																-- add to executive group
+	self.m_missile.alpha = 0 																	-- can't be seen
+	self.m_missile.fill.effect = "filter.dissolve" 												-- dissolve effect
+	self.m_missile.fill.effect.threshold = 0.6
+	self:tag("missile") 																		-- tag as a missile.
+end 
+
+--//	Handle messages - two entiries, distance, how far in squares, and target, the shot object.
+
+function MissileView:onMessage(sender,message)
+	self.m_missile.alpha = 1 																	-- visible and to front
+	self.m_missile:toFront()
+	self.m_missile.xScale,self.m_missile.yScale = 1,1 											-- default size
+	local scale = 0.6 / (message.distance+1) 													-- final size
+	transition.to(self.m_missile, { time = 100*message.distance,xScale = scale,yScale = scale, 	-- trnsition it, and hide when finished
+				onComplete = function() self.m_missile.alpha = 0 end })
+	if message.target == nil then print("No target ?") return end 
+	self:sendMessageDelayed(message.target,"shot",100*message.distance) 						-- also when finished, tell target it has been shot.
+end 
+
+--//	Tidy up.
+
+function MissileView:destructor()
+	self.m_missile:removeSelf()
+end 
 
 --- ************************************************************************************************************************************************************************
 --- ************************************************************************************************************************************************************************
@@ -402,17 +505,17 @@ function MainGameFactory:preOpen(info,eData)
 	FrontController:new(executive, { retro = eData.retro }):attach(manager) 					-- this handles input which is passed to the manager
 	FrontView:new(executive,{ maze = maze}):attach(player) 										-- add a 3D projection view, following the player.
 	MapView:new(executive,{ maze = maze, time = 99999999 }):attach(player) 						-- add a map view, following the player
+	MissileView:new(executive)
 	for i = 1, eData.phantomCount or 3 do 
 		Phantom:new(executive, { maze = maze, player = player, speed = eData.phantomSpeed, maxHits = eData.phantomHits })
 	end
+	PhantomMonitor:new(executive):attach(player)												-- monitor enemy distances and make breathy sounds.
 end
 
-
 math.randomseed(42)
-print(_G.Game,Game,Game.getState,Game:getState())
 Game:addLibraryObject("utils.audio", { sounds = { "pulse","shoot","teleport","die" }} )
 Game:addState("play",MainGameFactory:new(),{ endGame = { target = "play" }})
-Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 4000, phantomHits = 3, fireTime = 2000 })
+Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 3000, phantomHits = 3, fireTime = 2000 })
 
 --[[
 	
@@ -423,10 +526,5 @@ Game:start("play", { retro = false, phantomCount = 14, phantomSpeed = 4000, phan
 			- bullet display blanked on turn (view listen)
 			- handle recycling and speed up.
 			- score.
-	SFX 
-			- add the bong bong effect (can listen to view message)
-	
-	On move sends a broadcast message, map view can check against its list of viewed values, player manager can check for death.
-	Missile - fired by current player (instigted by controller), hides if player turns.
 
 --]]
