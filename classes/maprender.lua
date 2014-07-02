@@ -56,7 +56,7 @@ function MapRender:render(maze,player,phantoms,width,height)
 			end 
 			for _,ref in pairs(phantoms) do  													-- if phantoms at square, display that pseudo-tile
 				if player ~= nil and x == ref.x and y == ref.y then 
-					 tile = MapRender.PS_PHANTOM												-- uncomment this to show phantoms for debugging.
+					 --tile = MapRender.PS_PHANTOM												-- uncomment this to show phantoms for debugging.
 				end 
 			end
 
