@@ -633,8 +633,9 @@ BitmapString.remove = BitmapString.removeSelf 												-- synonym remove for 
 
 function BitmapString:show()
 	self.internalXAnchor,self.internalYAnchor = self.anchorX or 0.5,self.anchorY or 0.5 	-- get anchor X, anchor Y
-	self.currText = self.text .. "!" 														-- this means the change check will fail :)
-	self:setText(self.text)																	-- set the text
+	local text = self.currText
+	self.currtext = self.currText .. "!" 													-- this means the change check will fail :)
+	self:setText(text)																		-- set the text
 	return self
 end
 
