@@ -113,6 +113,7 @@ function ScreenObject:tap(event)
 	else 
 		self:click() 																			-- no target, it is clickable.
 	end
+	return true
 end
 
 --//	Handle a click - called when there is no target.
