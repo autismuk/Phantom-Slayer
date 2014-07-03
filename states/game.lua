@@ -439,7 +439,9 @@ function Phantom:onTimer(tag,timerID)
 	if self.m_maze:get(self.x+dx,self.y+dy) == Maze.WALL and math.random(1,20) == 1 then 		-- if can not move then just once in a while.
 		if math.random(1,2) == 1 then dx = 0 else dy = 0 end  									-- randomly zero one of dx,dy
 	end
-
+	if dx ~= 0 and dy ~= 0 then 																-- can't move diagonally
+		if math.random(1,2) == 1 then dx = 0 else dy = 0 end 
+	end
 	if self.m_maze:get(self.x+dx,self.y+dy) ~= Maze.WALL then 									-- if can move
 		self.x = self.x + dx self.y = self.y + dy 												-- move to new position
 	 	self:sendMessage("changelistener", { name = "phantom",x = self.x, y = self.y })			-- view update
@@ -616,11 +618,3 @@ function MainGameFactory:preOpen(info,eData)
 end
 
 return MainGameFactory
-
---[[
-		
-	Phantom 
-	  		- can actually run through phantoms .... (might actually allow this)
-
-"they would be extremely sticky to get free form speedily
---]]
