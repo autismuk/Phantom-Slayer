@@ -32,12 +32,24 @@ function Maze:constructor(info)
 	self.m_width = width or 20																	-- store width and self.m_height.
 	self.m_height = height or 20
 	self.m_map = {} 																			-- map. 0 = open, 1 = wall, 2 = compass, 3 = map, 4 = teleport
-	fillLevel = fillLevel or 0.42 																-- proportion of walls required, max
+	fillLevel = fillLevel or 0.44 																-- proportion of walls required, max
 	local iter  = 0 
 	while self:getFillRatio() > fillLevel and iter < 500 do 									-- until filled or too many iterations
 		self:addPart() 																			-- add a corridor
 		iter = iter + 1
 	end
+end 
+
+--//	Get maze width
+
+function Maze:getWidth() 
+	return self.m_width 
+end 
+
+--//	Get maze height
+
+function Maze:getHeight() 
+	return self.m_height 
 end 
 
 --//	Read cell x,y
@@ -104,7 +116,7 @@ function Maze:addPart()
 	x = math.random(0,self.m_width-1) y = math.random(0,self.m_height-1)  						-- start point.
 	dx = math.random(0,1)*2-1 dy = 0 															-- direction.
 	if math.random(0,1) == 0 then dy = dx dx = 0 end 											-- shift from vertical to horizontal.
-	size = math.random(3,math.floor(math.max(self.m_width,self.m_height)/2)) 					-- length of corridor
+	size = math.random(2,math.floor(math.max(self.m_width,self.m_height)*0.4)) 					-- length of corridor
 	repeat 
 		local ok = true 
 		self:put(x,y,Maze.OPEN) 																-- open it up

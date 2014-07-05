@@ -22,7 +22,6 @@ local Executive = require("system.executive")
 MainGameFactory = require("states.game") 														-- The main game Factory
 Titles = require("states.screens") 																-- Title and End game screens
 
-math.randomseed(42)
 Game:addLibraryObject("utils.audio", 															-- Preload Sounds
 							{ sounds = { "pulse","shoot","teleport","die","deadphantom","click" }} )
 
@@ -30,15 +29,17 @@ Game:addState("start",Titles.StartGameFactory:new(), { play =  { target = "play"
 Game:addState("play",MainGameFactory:new(),{ gameover = { target = "endgame" }}) 				-- play state
 Game:addState("endgame",Titles.EndGameFactory:new(), { restart = { target = "start"} }) 		-- endgame state
 
-Game:start()  																					-- and run.
+Game:start("play")  																					-- and run.
 
 --[[
 
-	Some way of highlighting clickables ?
-	Arrow information helper.
+	Bugs:
+		Distance wrap-around bug (doesn't follow nearest)
+		It is possible to run through phantoms (may keep this)
 
-	Phantom 
-	  		- can actually run through phantoms .... (might actually allow this)
+	Todo:
+		Some way of highlighting clickables ??
+		Arrow information helper.
 
 	"they would be extremely sticky to get free form speedily
 

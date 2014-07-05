@@ -436,7 +436,7 @@ function Phantom:onTimer(tag,timerID)
 	local dx,dy dx = player.x - self.x dy = player.y - self.y 									-- offset to player
 	if dx ~= 0 then dx = dx / math.abs(dx) end 													-- make -1,0,1 
 	if dy ~= 0 then dy = dy / math.abs(dy) end 
-	if self.m_maze:get(self.x+dx,self.y+dy) == Maze.WALL and math.random(1,20) == 1 then 		-- if can not move then just once in a while.
+	if self.m_maze:get(self.x+dx,self.y+dy) == Maze.WALL and math.random(1,30) == 1 then 		-- if can not move then just once in a while.
 		if math.random(1,2) == 1 then dx = 0 else dy = 0 end  									-- randomly zero one of dx,dy
 	end
 	if dx ~= 0 and dy ~= 0 then 																-- can't move diagonally
@@ -610,7 +610,7 @@ function MainGameFactory:preOpen(info,eData)
 	FrontView:new(executive,{ maze = maze}):attach(player) 										-- add a 3D projection view, following the player.
 	MapView:new(executive,{ maze = maze, time = 9999999 }):attach(player) 						-- add a map view, following the player
 	MissileView:new(executive)
-	for i = 1, eData.phantomCount or 14 do  													-- add the bad guys
+	for i = 1, eData.phantomCount or 3 do  														-- add the bad guys
 		Phantom:new(executive, { maze = maze, player = player, speed = eData.phantomSpeed, maxHits = eData.phantomHits })
 	end
 	PhantomMonitor:new(executive):attach(player)												-- monitor enemy distances and make breathy sounds.

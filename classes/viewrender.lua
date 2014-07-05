@@ -47,7 +47,8 @@ function ViewRender:render(maze,player,phantoms,width,height)
 		local rOuter = self:getDepthRect(depth) 												-- get the depth of the outer rectangle
 		local rMiddle = self:getDepthRect(depth+0.5)
 		local rInner = self:getDepthRect(depth+1)
-		x = player.x + depth * player.dx y = player.y + depth * player.dy
+		x = (player.x + maze:getWidth() + depth * player.dx) % maze:getWidth()
+		y = (player.y + maze:getHeight() + depth * player.dy) % maze:getHeight()
 		-- if rInner ~= nil then local r2 = display.newRect(self.m_group,rInner.x1,rInner.y1,rInner.width,rInner.height) r2:setFillColor(0,0,0,0) r2:setStrokeColor(0,0.4,0,0.5) r2.strokeWidth = 1 r2.anchorX,r2.anchorY = 0,0 end
 		if rInner ~= nil then  
 			self:renderWall({ rInner.x1,rInner.y2,rOuter.x1,rOuter.y2,rOuter.x2,rOuter.y2,rInner.x2,rInner.y2},"f")
