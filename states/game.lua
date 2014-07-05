@@ -621,7 +621,9 @@ function MainGameFactory:preOpen(info,eData)
 
 	executive:addLibraryObject("utils.tutorial",{
 		tutorialList = {
-			{ x = 40,y = 40, text = "tap here to move and turn", pointers = { 5,50, 50,10, 95,50, 50,90 }}
+			{ x = 40,y = 40, text = "tap here to move and turn", pointers = { 5,50, 50,10, 95,50, 50,90 }},
+			{ x = 60,y = 60, text = "fire missile, two second recharge time", pointers = {85,85} },
+			{ x = 30,y = 30, text = "exit game", pointers = { 10,10 }}
 		}
 	})
 end

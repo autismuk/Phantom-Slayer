@@ -29,7 +29,7 @@ Game:addState("start",Titles.StartGameFactory:new(), { play =  { target = "play"
 Game:addState("play",MainGameFactory:new(),{ gameover = { target = "endgame" }}) 				-- play state
 Game:addState("endgame",Titles.EndGameFactory:new(), { restart = { target = "start"} }) 		-- endgame state
 
-Game:start("play")  																			-- and run.
+Game:start()  																					-- and run.
 
 --[[
 
@@ -38,7 +38,6 @@ Game:start("play")  																			-- and run.
 
 	Todo:
 		Some way of highlighting clickables ??
-		Arrow information helper.
 
 	"they would be extremely sticky to get free form speedily
 
