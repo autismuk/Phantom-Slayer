@@ -35,6 +35,8 @@ Game:start()  																					-- and run.
 
 	Bugs:
 		It is possible to run through phantoms (may keep this)
+		Icon
+		Dissolve doesn't work ?
 
 	Todo:
 		Some way of highlighting clickables ??

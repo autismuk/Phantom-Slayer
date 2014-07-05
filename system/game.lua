@@ -225,8 +225,10 @@ function GameManagerClass:transitionCompleted()
 	self.m_currentFactoryInstance = self.m_newStateInstance  										-- set current instance to new instance
 	self.m_newStateInstance = nil 																	-- null out the new instance
 	self.m_managerLocked = false 																	-- and we can now change state.
-	self:memory()
-end 
+	if system.getInfo("environment") == "simulator" then 											-- display memory usage on simulator
+		self:memory()
+	end 
+end
 
 --- ************************************************************************************************************************************************************************
 -- 	Game Class. This is a singleton containing a finite state machine representing scene flow, a listener that listens to the FSM and changes scenes accordingly,
