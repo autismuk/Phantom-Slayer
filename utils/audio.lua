@@ -25,10 +25,9 @@ function AudioCache:constructor(info)
 	self:name("audio") 																			-- access this via e.audio
 	self.m_soundCache = {} 																		-- cached audio
 	for _,name in ipairs(info.sounds) do  														-- work through list of audio filenames
-		if name:find("%.") == nil then name = name .. ".mp3" end  								-- no extension, default to .mp3
-		local stub = name:match("(.*)%."):lower() 												-- get the 'stub', the name without the extension as l/c
-		name = "audio/"..name 																	-- actual name of file in audio subdirectory.
-		self.m_soundCache[stub] = audio.loadSound(name) 										-- load and store in cache.
+		local fName = self:getFileName(name)													-- get full file name
+		local stub = fName:match("%/(.*)%."):lower() 											-- get the 'stub', the name without the extension as l/c 
+		self.m_soundCache[stub] = audio.loadSound(fName) 										-- load and store in cache.
 	end
 end 
 
@@ -40,6 +39,23 @@ function AudioCache:play(name,options)
 	name = name:lower() 																		-- case irrelevant
 	assert(self.m_soundCache[name] ~= nil,"Unknown sound "..name) 								-- check sound actually exists
 	audio.play(self.m_soundCache[name],options) 												-- play it 
+end 
+
+--//	Given a stub file, get the full file name
+--//	@name 	[string]		short file name
+--//	@return [string]		reference to file, in audio subdirectory.
+
+function AudioCache:getFileName(name)
+	if name:find("%.") == nil then name = name .. ".mp3" end  									-- no extension, default to .mp3
+	return "audio/"..name 																		-- actual name of file in audio subdirectory.
+end 
+
+--//	Check if sound present.
+--//	@name 	[string]		short name of sound
+--//	@return [boolean]		true if present.
+
+function AudioCache:isSoundPresent(name)
+	return (self.m_soundCache[name:lower()] ~= nil)
 end 
 
 --//	Destructor

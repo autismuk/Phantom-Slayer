@@ -108,6 +108,7 @@ end
 --//	@event [event]			event 
 
 function ScreenObject:tap(event)
+	if Game.e.audio:isSoundPresent("click") then Game.e.audio:play("click") end 				-- click if there is a click sound.
 	if self.m_eventTarget ~= nil then  															-- is there a target ?
 		self:sendMessage(self.m_eventTarget,{ name = "tap", tag = self.m_tag }) 				-- if so, send it a message.
 	else 
