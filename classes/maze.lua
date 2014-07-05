@@ -32,7 +32,7 @@ function Maze:constructor(info)
 	self.m_width = width or 20																	-- store width and self.m_height.
 	self.m_height = height or 20
 	self.m_map = {} 																			-- map. 0 = open, 1 = wall, 2 = compass, 3 = map, 4 = teleport
-	fillLevel = fillLevel or 0.44 																-- proportion of walls required, max
+	fillLevel = fillLevel or 0.42 																-- proportion of walls required, max
 	local iter  = 0 
 	while self:getFillRatio() > fillLevel and iter < 500 do 									-- until filled or too many iterations
 		self:addPart() 																			-- add a corridor

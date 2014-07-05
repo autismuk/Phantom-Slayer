@@ -29,12 +29,11 @@ Game:addState("start",Titles.StartGameFactory:new(), { play =  { target = "play"
 Game:addState("play",MainGameFactory:new(),{ gameover = { target = "endgame" }}) 				-- play state
 Game:addState("endgame",Titles.EndGameFactory:new(), { restart = { target = "start"} }) 		-- endgame state
 
-Game:start("play")  																					-- and run.
+Game:start("play")  																			-- and run.
 
 --[[
 
 	Bugs:
-		Distance wrap-around bug (doesn't follow nearest)
 		It is possible to run through phantoms (may keep this)
 
 	Todo:

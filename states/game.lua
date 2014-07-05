@@ -434,6 +434,8 @@ end
 function Phantom:onTimer(tag,timerID)
 	local player = self.m_player:getLocation() 													-- where the player is
 	local dx,dy dx = player.x - self.x dy = player.y - self.y 									-- offset to player
+	if math.abs(dx) > self.m_maze:getWidth() * 3 / 4 then dx = -dx end 							
+	if math.abs(dy) > self.m_maze:getHeight() * 3 / 4 then dy = -dy end 							
 	if dx ~= 0 then dx = dx / math.abs(dx) end 													-- make -1,0,1 
 	if dy ~= 0 then dy = dy / math.abs(dy) end 
 	if self.m_maze:get(self.x+dx,self.y+dy) == Maze.WALL and math.random(1,30) == 1 then 		-- if can not move then just once in a while.
@@ -443,7 +445,8 @@ function Phantom:onTimer(tag,timerID)
 		if math.random(1,2) == 1 then dx = 0 else dy = 0 end 
 	end
 	if self.m_maze:get(self.x+dx,self.y+dy) ~= Maze.WALL then 									-- if can move
-		self.x = self.x + dx self.y = self.y + dy 												-- move to new position
+		self.x = (self.x + dx + self.m_maze:getWidth()) % self.m_maze:getWidth()
+		self.y = (self.y + dy + self.m_maze:getHeight()) % self.m_maze:getHeight()
 	 	self:sendMessage("changelistener", { name = "phantom",x = self.x, y = self.y })			-- view update
 	end		
 end
@@ -615,6 +618,12 @@ function MainGameFactory:preOpen(info,eData)
 	end
 	PhantomMonitor:new(executive):attach(player)												-- monitor enemy distances and make breathy sounds.
 	Score:new(executive)
+
+	executive:addLibraryObject("utils.tutorial",{
+		tutorialList = {
+			{ x = 40,y = 40, text = "tap here to move and turn", pointers = { 5,50, 50,10, 95,50, 50,90 }}
+		}
+	})
 end
 
 return MainGameFactory
