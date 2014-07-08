@@ -35,8 +35,8 @@ Game:start()  																					-- and run.
 
 	Bugs:
 		It is possible to run through phantoms (may keep this)
-		Icon
-		Dissolve doesn't work ?
+		Dissolve doesn't work ? (Android problem)
+		Phantoms near the start ???
 
 	Todo:
 		Some way of highlighting clickables ??
