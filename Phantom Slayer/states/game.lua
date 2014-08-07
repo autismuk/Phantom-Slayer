@@ -498,7 +498,8 @@ function PhantomMonitor:onTimer(deltaTime,deltaMillis,current)
 	end 
 	local breatheTime = math.max(0.3+nearest/4) 												-- how long the
 	if nearest == 0 or breatheTime > 2.1 then self:addSingleTimer(1000)  return end 			-- right on top, or too long, fire again in 1 second.
-	Game.e.audio:play("pulse") 																	-- play the breathy sound
+	Game.e.audio:play("pulse", { volume = 1 - nearest / 7 * 0.85}) 								-- play the breathy sound
+	--print(nearest)
 	self:addSingleTimer(breatheTime * 1000) 													-- fire after the breathy sound
 end
 

@@ -12,6 +12,30 @@
 		<data>
 		55BcMWg8st+KBXi6m7SjZTk3hSE=
 		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_dark.png</key>
+		<data>
+		4t88ls8RNhM7zMbcX/YJ3cK0TzQ=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_dark@2x.png</key>
+		<data>
+		s+vdIRrtUDzVFqlP1qQPpdA5upw=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_dark@4x.png</key>
+		<data>
+		pk5HONFPkGM9zTBQ05YkXSyoUW0=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_light.png</key>
+		<data>
+		EXJe/CxUOI7SaBb7prkKWHIN8iE=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_light@2x.png</key>
+		<data>
+		0IxOVx9EGOM64TyRv7AwgDFyPmo=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_light@4x.png</key>
+		<data>
+		luYfxGQ/GUzJCJceohmwoXutRnA=
+		</data>
 		<key>CoronaResources.bundle/widget_theme_ios.png</key>
 		<data>
 		Q8NIP7jbz3kqY6Rb5GmI5MYbeWk=
@@ -32,41 +56,45 @@
 		<data>
 		N3yVvMtUIlbf1o2AU9LsEqJC9pM=
 		</data>
+		<key>CoronaResources.bundle/widget_theme_onOff_mask_android_holo.png</key>
+		<data>
+		a4+kgYOfqnPgNk+g4Eyn+pHyf1A=
+		</data>
 		<key>CoronaResources.bundle/widget_theme_pickerWheel_mask.png</key>
 		<data>
 		zSTOYr6crkiOcn8E5PLBKVNKJEY=
 		</data>
 		<key>CoronaSDK3rdPartyLicenses.txt</key>
 		<data>
-		chWB9Mq0ZhpeG30D4FdYhhh7fIs=
+		FBpSKHwdw+SyZ/AnrP7yMA/orQ0=
 		</data>
 		<key>Default-568h@2x.png</key>
 		<data>
-		LOkbhDBp76UV0LoZy20tWbx79OU=
+		pLI4ixRkGARazjcjdH0YcUZMnKs=
 		</data>
 		<key>Default-Landscape.png</key>
 		<data>
-		u4mLgZqWUE634i90gmiAXuqNRmw=
+		mFZscgqYwflx8Gw+xKmd5MuO0yc=
 		</data>
 		<key>Default-Landscape@2x.png</key>
 		<data>
-		xkQHG4P408tLEnF4SFI2EOMdPQE=
+		hEGSiKRhwhh1iCotopNqmMI1YvI=
 		</data>
 		<key>Default-Portrait.png</key>
 		<data>
-		dt4dXW1pXCKH/Cx6KcMa5u+8ym0=
+		qYkvOGREproQuKIO/T7AM/OJ0RY=
 		</data>
 		<key>Default-Portrait@2x.png</key>
 		<data>
-		3z8Hyy9j1OXn3gXAkC+VEKPznF4=
+		AgHbZAZwJhQRKKcH3V1UpAoS9NM=
 		</data>
 		<key>Default.png</key>
 		<data>
-		SbDmgtYPpUbkVYzsrgggcSjox2k=
+		Qq10ZtKg/m+HelIhmb79XeJxjXI=
 		</data>
 		<key>Default@2x.png</key>
 		<data>
-		Zhl9krebptejMjOCj2V2RoSeh+E=
+		ugVMMF7JWf7v4w85QldO33MVHrA=
 		</data>
 		<key>FBUserSettingsViewResources.bundle/Contents/Resources/en.lproj/Localizable.strings</key>
 		<data>
@@ -126,59 +154,79 @@
 		</data>
 		<key>Icon-60.png</key>
 		<data>
-		ODv1Eea2qSaMtDt+maKTWFZqqJE=
+		OXz6nyvy/LmQ/RFRIxvJfmawRr0=
 		</data>
 		<key>Icon-60@2x.png</key>
 		<data>
-		0+G0WqTgXAiAQRbU/ADAQxhLFB0=
+		e3Gc0KPD9udDeI1G3EzwLq6buE4=
 		</data>
 		<key>Icon-72.png</key>
 		<data>
-		fV/4U2KY/l1Ar60z+LhP1rBkkMI=
+		z28azcQcJIrfeU7B3oY9fKvyHeg=
 		</data>
 		<key>Icon-72@2x.png</key>
 		<data>
-		Ey1jaagtWpjNhzSp4xlq22AbBcg=
+		YraKobhUyS/bC1tuSdCCzpicB8s=
 		</data>
 		<key>Icon-76.png</key>
 		<data>
-		a6gdP2yvWSKiHvuPsvnvpVC8lmk=
+		ouzSjpUzpIOyRNnzs7MCATKl0yE=
 		</data>
 		<key>Icon-76@2x.png</key>
 		<data>
-		dQDams69or5ML1QlGPSmhJ9bQ4Q=
+		qcbMpEMOeo6+1IaNxMfDTdUiG74=
 		</data>
 		<key>Icon-Small-40.png</key>
 		<data>
-		6rkgX8JtxewKCRKWL25dkoWlIJo=
+		OUZXeNSIl/59/reYrr8JLFZq8lo=
 		</data>
 		<key>Icon-Small-40@2x.png</key>
 		<data>
-		o6HU3JGJe6raBwsr5bjDSdyWWTM=
+		SxNkgHCjsGO23BOLPlh9nD/8X0g=
 		</data>
 		<key>Icon-Small-50.png</key>
 		<data>
-		zamPBAAlhuMo+VB87ZY87/zCVI4=
+		LmXs6qYlxrx7MG9aCoF5ryWfq34=
 		</data>
 		<key>Icon-Small-50@2x.png</key>
 		<data>
-		BqiXfrRuGFFGQMea7s+czRfR2NU=
+		2OClcC3RiFZK1znAN8K2ljlmgpE=
 		</data>
 		<key>Icon-Small.png</key>
 		<data>
-		swXI1zetuh31gw0kKFIzQUVAQYo=
+		2WdVU8SboFJS2Qiz6Ehoknsu2DI=
 		</data>
 		<key>Icon-Small@2x.png</key>
 		<data>
-		Kdp+L7Zbc2D/RQqmFjlxBbFGqmI=
+		1Z9XptgMSZRdB5ocD3ZqUMX2ll8=
+		</data>
+		<key>Icon-hdpi.png</key>
+		<data>
+		z28azcQcJIrfeU7B3oY9fKvyHeg=
+		</data>
+		<key>Icon-ldpi.png</key>
+		<data>
+		6oeQotOFPoacscPvjjhwo06RXjk=
+		</data>
+		<key>Icon-mdpi.png</key>
+		<data>
+		09+4fmYIzwJLPdaTsiIPOhjsaoY=
+		</data>
+		<key>Icon-xhdpi.png</key>
+		<data>
+		uNhdiikXfU34eX5MTHAKa9JIK9k=
+		</data>
+		<key>Icon-xxhdpi.png</key>
+		<data>
+		YraKobhUyS/bC1tuSdCCzpicB8s=
 		</data>
 		<key>Icon.png</key>
 		<data>
-		fI+NV1pZfV1M/wBMPN3NNdnwz5U=
+		CsD0QKcq9a4/KJxq7RhgJ9BZVzg=
 		</data>
 		<key>Icon@2x.png</key>
 		<data>
-		87F58sfqlVtlduicP98SizcKC9k=
+		j6FToaVrwHrrLr6/ZFg5IYWpKTI=
 		</data>
 		<key>MainWindow-iPad.nib</key>
 		<data>
@@ -194,7 +242,7 @@
 		</data>
 		<key>README.md</key>
 		<data>
-		ZwfhNwWAb5GHprXDLzzCDjKYkA0=
+		Orj0i9nfNuDtE/MRE9UaofHOTbY=
 		</data>
 		<key>audio/click.mp3</key>
 		<data>
@@ -254,7 +302,7 @@
 		</data>
 		<key>icon.svg</key>
 		<data>
-		uOXxoGX/5kW5RFtJtO08fFryQ3A=
+		a5rG8WavLHQoFrurqpB9sIol65k=
 		</data>
 		<key>images/back.png</key>
 		<data>
@@ -302,11 +350,11 @@
 		</data>
 		<key>launch.svg</key>
 		<data>
-		T18qWgXoBbfsuZasaNN3QTwJliY=
+		rNUMwYKTr0bKX53nGhGereyoU9Y=
 		</data>
 		<key>resource.car</key>
 		<data>
-		8QKn398tjP83OaJ2aVq3tQ732U0=
+		v02IeqDuCYtO5LZmEIIHNIVgwyE=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -319,6 +367,30 @@
 		<data>
 		55BcMWg8st+KBXi6m7SjZTk3hSE=
 		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_dark.png</key>
+		<data>
+		4t88ls8RNhM7zMbcX/YJ3cK0TzQ=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_dark@2x.png</key>
+		<data>
+		s+vdIRrtUDzVFqlP1qQPpdA5upw=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_dark@4x.png</key>
+		<data>
+		pk5HONFPkGM9zTBQ05YkXSyoUW0=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_light.png</key>
+		<data>
+		EXJe/CxUOI7SaBb7prkKWHIN8iE=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_light@2x.png</key>
+		<data>
+		0IxOVx9EGOM64TyRv7AwgDFyPmo=
+		</data>
+		<key>CoronaResources.bundle/widget_theme_android_holo_light@4x.png</key>
+		<data>
+		luYfxGQ/GUzJCJceohmwoXutRnA=
+		</data>
 		<key>CoronaResources.bundle/widget_theme_ios.png</key>
 		<data>
 		Q8NIP7jbz3kqY6Rb5GmI5MYbeWk=
@@ -339,41 +411,45 @@
 		<data>
 		N3yVvMtUIlbf1o2AU9LsEqJC9pM=
 		</data>
+		<key>CoronaResources.bundle/widget_theme_onOff_mask_android_holo.png</key>
+		<data>
+		a4+kgYOfqnPgNk+g4Eyn+pHyf1A=
+		</data>
 		<key>CoronaResources.bundle/widget_theme_pickerWheel_mask.png</key>
 		<data>
 		zSTOYr6crkiOcn8E5PLBKVNKJEY=
 		</data>
 		<key>CoronaSDK3rdPartyLicenses.txt</key>
 		<data>
-		chWB9Mq0ZhpeG30D4FdYhhh7fIs=
+		FBpSKHwdw+SyZ/AnrP7yMA/orQ0=
 		</data>
 		<key>Default-568h@2x.png</key>
 		<data>
-		LOkbhDBp76UV0LoZy20tWbx79OU=
+		pLI4ixRkGARazjcjdH0YcUZMnKs=
 		</data>
 		<key>Default-Landscape.png</key>
 		<data>
-		u4mLgZqWUE634i90gmiAXuqNRmw=
+		mFZscgqYwflx8Gw+xKmd5MuO0yc=
 		</data>
 		<key>Default-Landscape@2x.png</key>
 		<data>
-		xkQHG4P408tLEnF4SFI2EOMdPQE=
+		hEGSiKRhwhh1iCotopNqmMI1YvI=
 		</data>
 		<key>Default-Portrait.png</key>
 		<data>
-		dt4dXW1pXCKH/Cx6KcMa5u+8ym0=
+		qYkvOGREproQuKIO/T7AM/OJ0RY=
 		</data>
 		<key>Default-Portrait@2x.png</key>
 		<data>
-		3z8Hyy9j1OXn3gXAkC+VEKPznF4=
+		AgHbZAZwJhQRKKcH3V1UpAoS9NM=
 		</data>
 		<key>Default.png</key>
 		<data>
-		SbDmgtYPpUbkVYzsrgggcSjox2k=
+		Qq10ZtKg/m+HelIhmb79XeJxjXI=
 		</data>
 		<key>Default@2x.png</key>
 		<data>
-		Zhl9krebptejMjOCj2V2RoSeh+E=
+		ugVMMF7JWf7v4w85QldO33MVHrA=
 		</data>
 		<key>FBUserSettingsViewResources.bundle/Contents/Resources/en.lproj/Localizable.strings</key>
 		<data>
@@ -433,59 +509,79 @@
 		</data>
 		<key>Icon-60.png</key>
 		<data>
-		ODv1Eea2qSaMtDt+maKTWFZqqJE=
+		OXz6nyvy/LmQ/RFRIxvJfmawRr0=
 		</data>
 		<key>Icon-60@2x.png</key>
 		<data>
-		0+G0WqTgXAiAQRbU/ADAQxhLFB0=
+		e3Gc0KPD9udDeI1G3EzwLq6buE4=
 		</data>
 		<key>Icon-72.png</key>
 		<data>
-		fV/4U2KY/l1Ar60z+LhP1rBkkMI=
+		z28azcQcJIrfeU7B3oY9fKvyHeg=
 		</data>
 		<key>Icon-72@2x.png</key>
 		<data>
-		Ey1jaagtWpjNhzSp4xlq22AbBcg=
+		YraKobhUyS/bC1tuSdCCzpicB8s=
 		</data>
 		<key>Icon-76.png</key>
 		<data>
-		a6gdP2yvWSKiHvuPsvnvpVC8lmk=
+		ouzSjpUzpIOyRNnzs7MCATKl0yE=
 		</data>
 		<key>Icon-76@2x.png</key>
 		<data>
-		dQDams69or5ML1QlGPSmhJ9bQ4Q=
+		qcbMpEMOeo6+1IaNxMfDTdUiG74=
 		</data>
 		<key>Icon-Small-40.png</key>
 		<data>
-		6rkgX8JtxewKCRKWL25dkoWlIJo=
+		OUZXeNSIl/59/reYrr8JLFZq8lo=
 		</data>
 		<key>Icon-Small-40@2x.png</key>
 		<data>
-		o6HU3JGJe6raBwsr5bjDSdyWWTM=
+		SxNkgHCjsGO23BOLPlh9nD/8X0g=
 		</data>
 		<key>Icon-Small-50.png</key>
 		<data>
-		zamPBAAlhuMo+VB87ZY87/zCVI4=
+		LmXs6qYlxrx7MG9aCoF5ryWfq34=
 		</data>
 		<key>Icon-Small-50@2x.png</key>
 		<data>
-		BqiXfrRuGFFGQMea7s+czRfR2NU=
+		2OClcC3RiFZK1znAN8K2ljlmgpE=
 		</data>
 		<key>Icon-Small.png</key>
 		<data>
-		swXI1zetuh31gw0kKFIzQUVAQYo=
+		2WdVU8SboFJS2Qiz6Ehoknsu2DI=
 		</data>
 		<key>Icon-Small@2x.png</key>
 		<data>
-		Kdp+L7Zbc2D/RQqmFjlxBbFGqmI=
+		1Z9XptgMSZRdB5ocD3ZqUMX2ll8=
+		</data>
+		<key>Icon-hdpi.png</key>
+		<data>
+		z28azcQcJIrfeU7B3oY9fKvyHeg=
+		</data>
+		<key>Icon-ldpi.png</key>
+		<data>
+		6oeQotOFPoacscPvjjhwo06RXjk=
+		</data>
+		<key>Icon-mdpi.png</key>
+		<data>
+		09+4fmYIzwJLPdaTsiIPOhjsaoY=
+		</data>
+		<key>Icon-xhdpi.png</key>
+		<data>
+		uNhdiikXfU34eX5MTHAKa9JIK9k=
+		</data>
+		<key>Icon-xxhdpi.png</key>
+		<data>
+		YraKobhUyS/bC1tuSdCCzpicB8s=
 		</data>
 		<key>Icon.png</key>
 		<data>
-		fI+NV1pZfV1M/wBMPN3NNdnwz5U=
+		CsD0QKcq9a4/KJxq7RhgJ9BZVzg=
 		</data>
 		<key>Icon@2x.png</key>
 		<data>
-		87F58sfqlVtlduicP98SizcKC9k=
+		j6FToaVrwHrrLr6/ZFg5IYWpKTI=
 		</data>
 		<key>MainWindow-iPad.nib</key>
 		<data>
@@ -501,7 +597,7 @@
 		</data>
 		<key>README.md</key>
 		<data>
-		ZwfhNwWAb5GHprXDLzzCDjKYkA0=
+		Orj0i9nfNuDtE/MRE9UaofHOTbY=
 		</data>
 		<key>audio/click.mp3</key>
 		<data>
@@ -561,7 +657,7 @@
 		</data>
 		<key>icon.svg</key>
 		<data>
-		uOXxoGX/5kW5RFtJtO08fFryQ3A=
+		a5rG8WavLHQoFrurqpB9sIol65k=
 		</data>
 		<key>images/back.png</key>
 		<data>
@@ -609,11 +705,11 @@
 		</data>
 		<key>launch.svg</key>
 		<data>
-		T18qWgXoBbfsuZasaNN3QTwJliY=
+		rNUMwYKTr0bKX53nGhGereyoU9Y=
 		</data>
 		<key>resource.car</key>
 		<data>
-		8QKn398tjP83OaJ2aVq3tQ732U0=
+		v02IeqDuCYtO5LZmEIIHNIVgwyE=
 		</data>
 	</dict>
 	<key>rules</key>

@@ -38,7 +38,10 @@ end
 function AudioCache:play(name,options)
 	name = name:lower() 																		-- case irrelevant
 	assert(self.m_soundCache[name] ~= nil,"Unknown sound "..name) 								-- check sound actually exists
-	audio.play(self.m_soundCache[name],options) 												-- play it 
+	local channel = audio.play(self.m_soundCache[name],options) 								-- play it 
+	if channel > 0 and options ~= nil then 														-- set volume if provided.
+		audio.setVolume(options.volume or 1.0, { channel = channel }) 
+	end		
 end 
 
 --//	Given a stub file, get the full file name
